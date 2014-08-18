@@ -28,11 +28,11 @@
 //-------------------------------------------
 #define ROLL2DESK_R1 0 //(M_PI)
 #define PITCH2DESK_R1 (M_PI/2+M_PI/6) //(M_PI/2-M_PI/6)
-#define YAW2DESK_R1  (2*M_PI-3*M_PI/4)//(-M_PI/2)
+#define YAW2DESK_R1 0 // (2*M_PI-3*M_PI/4)//(-M_PI/2)
 //-------------------------------------------
 #define ROLL2DESK_R2 0 //(M_PI)
 #define PITCH2DESK_R2 (M_PI/2+M_PI/6) //(M_PI/2-M_PI/6)
-#define YAW2DESK_R2  (3*M_PI/4)//(-M_PI/2)
+#define YAW2DESK_R2 0 // (3*M_PI/4)//(-M_PI/2)
 //-------------------------------------------
 #define ANGLE_NUMBER_STEP 10
 #define STEP 0.01 // [m]

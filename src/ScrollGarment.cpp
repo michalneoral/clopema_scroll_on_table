@@ -27,6 +27,12 @@ void ScrollGarment::getListOfCollisions(std::vector<std::string>& elinks1,std::v
 	}
 }
 
+double randomOffset(){
+	double min=-0.03;
+	double max=0.03;
+	return (max-min)*((double)std::rand()/RAND_MAX)+min;
+}
+
 void ScrollGarment::getTestPositions(std::string table_frame , std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, const std::vector< geometry_msgs::Point >& waypoints_1, const	std::vector< geometry_msgs::Point >& waypoints_2, double yawR1, double yawR2, double offset) { //-------------------------------------------------------------------------------------------
 
 	geometry_msgs::Pose blank;
@@ -50,12 +56,12 @@ void ScrollGarment::getTestPositions(std::string table_frame , std::vector<geome
 
 	for (i = 0; i < waypoints_1.size(); i++){
 		blank.position = waypoints_1[i];
-		blank.position.z = HEIGHT + offset;
+		blank.position.z = HEIGHT + randomOffset() + offset;
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
 		wp1.push_back(blank);
 		
 		blank.position = waypoints_2[i];
-		blank.position.z = HEIGHT + offset;
+		blank.position.z = HEIGHT + randomOffset() + offset;
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
 		wp2.push_back(blank);
 	}
@@ -252,6 +258,7 @@ int ScrollGarment::pressOnTheTable(std::string table_frame , const double& yawR1
 	if(isOk){ 
 		return 2;
 	} else if (planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP)){
+		trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
 		add_current_state_to_trajectory(trajectory.joint_trajectory);
 		if(crc_.execute_traj(trajectory.joint_trajectory)){
 			return 1;
@@ -280,20 +287,21 @@ bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR
 
 			blank.position = waypoints_1[i];
 			mutex_z_r1_.lock();
-			blank.position.z = z_r1_;// + (WrenchR1_.getForce() - force) * FORCE_CONST;
+			blank.position.z = z_r1_ + (WrenchR1_.getForce() - force) * FORCE_CONST;
 			mutex_z_r1_.unlock();
 			blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
 			wp1.push_back(blank);
 
 			blank.position = waypoints_2[i];
 			mutex_z_r2_.lock();
-			blank.position.z = z_r2_;// + (WrenchR2_.getForce() - force) * FORCE_CONST;
+			blank.position.z = z_r2_ + (WrenchR2_.getForce() - force) * FORCE_CONST;
 			mutex_z_r2_.unlock();
 			blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
 			wp2.push_back(blank);
 
 
 			if(planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP)){
+				trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
 				if (trajectory.joint_trajectory.points.size() <= 4){
 					next = true;
 					add_current_state_to_trajectory(trajectory.joint_trajectory);
@@ -353,23 +361,11 @@ bool ScrollGarment::goToPosition(std::string table_frame , const double& yawR1, 
 		wp2.push_back(blank);
 	}
 
-
 	if(planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP)){
-
-		// robot_state::RobotState current_state(*crc_.getCurrentState());
-		// crc_.setStartState(current_state);		
-		// complete_trajectory(current_state, trajectory.joint_trajectory);
-		// ros::Duration(SLEEP_BEFORE_EXEC).sleep();
-		// trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
-		pub_traj_.controle(trajectory.joint_trajectory);
+		trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
 		add_current_state_to_trajectory(trajectory.joint_trajectory);
 		pub_traj_.controle(trajectory.joint_trajectory);
-		// clopema_robot::ClopemaRobotCommander::Plan plan;
-		// plan.trajectory_ = trajectory;
-		// return crc_.execute(plan);
 		return crc_.execute_traj(trajectory.joint_trajectory);
-
-
 	}else{
 		ROS_ERROR("Cannot interpolate");
 		return false;
@@ -395,8 +391,12 @@ bool ScrollGarment::moveOverTable(	std::string frame_id,	std::vector< geometry_m
 
 	if(testTrajectory(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf)){
 
+		crc_.execute_traj(crc_.gripper_trajectory(clopema_robot::GRIPPER_OPEN));
+		
+
 		if( !goToPosition(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, true) ){
 			ROS_ERROR("Cannot execution move to the start position.");
+			crc_.setServoPowerOff();
 			return false;
 		}
 
@@ -411,6 +411,7 @@ bool ScrollGarment::moveOverTable(	std::string frame_id,	std::vector< geometry_m
 			int statueOfPress = pressOnTheTable(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, force);
 			if( statueOfPress == 0){
 				ROS_ERROR("Cannot press on the table.");
+				crc_.setServoPowerOff();
 				return false;
 			} else if (statueOfPress == 2){
 				break;
@@ -421,20 +422,23 @@ bool ScrollGarment::moveOverTable(	std::string frame_id,	std::vector< geometry_m
 
 		if(!scrollOverTable(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, force)){
 			ROS_ERROR("Cannot scroll.");
+			crc_.setServoPowerOff();
 			return false;
 		}
 
-		// if( !goToPosition(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, false) ){
-		// 	ROS_ERROR("Cannot execution move to the end position.");
-		// 	return false;
-		// }
+		if( !goToPosition(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, false) ){
+			ROS_ERROR("Cannot execution move to the end position.");
+			crc_.setServoPowerOff();
+			return false;
+		}
 
 
 	}else{
 		ROS_ERROR("Trajectory wasn't found.");
+		crc_.setServoPowerOff();
 		return false;
 	}
-
+	crc_.setServoPowerOff();
 	return true;
 
 

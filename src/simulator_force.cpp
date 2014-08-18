@@ -47,6 +47,9 @@ public:
 	clopema_robot::ClopemaRobotCommander crc_;
 
 	ros::NodeHandle node_;
+
+	boost::mutex mutex_z_r1_;
+	boost::mutex mutex_z_r2_;
 	double z_r1_;
 	double z_r2_;
 };
@@ -86,7 +89,9 @@ double ForceSimulator::computeSingle (double z, double a2, double a1, double a0)
 void ForceSimulator::computeForceR1 (geometry_msgs::WrenchStamped& simForce){
 	simForce.header.seq = seq_;
 	double z;
+	mutex_z_r1_.lock();
 	z = z_r1_;
+	mutex_z_r1_.unlock();
 	ros::Time t = ros::Time::now();
 	simForce.header.stamp = t;
 	simForce.header.frame_id = "r1_force_data_filtered";
@@ -96,19 +101,22 @@ void ForceSimulator::computeForceR1 (geometry_msgs::WrenchStamped& simForce){
 	else {z=(START_HEIGHT-z)*M_TO_MM;}
 	simForce.wrench.force.z = z * -0.64 * 8 + ((double)std::rand()/RAND_MAX * 5);
 
-	std::cout << "[ " << ros::Time::now() << " ] z_r1: " << z << " Force: " << simForce.wrench.force.z << std::endl;
 	// simForce.wrench.force.x = computeSingle (z, -0.0138,    1.2562,   -3.2764);
 	// simForce.wrench.force.y = computeSingle (z, -0.0290,   -1.4388,    2.2879);
 	// simForce.wrench.force.z = computeSingle (z, -0.0082,   -1.3716,   -1.2039);
 	// simForce.wrench.torque.x = computeSingle (z, 0.0098,    0.4168,   -0.3085);
 	// simForce.wrench.torque.y = computeSingle (z, -0.0016,   0.3460,   -0.5092);
 	// simForce.wrench.torque.z = computeSingle (z, -0.0004,   0.0016,    0.0081);
+
+	std::cout << "[ " << ros::Time::now() << " ] z_r1: " << z << " Force: " << simForce.wrench.force.z << std::endl;
 }
 
 void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
 	simForce.header.seq = seq_;
 	double z;
+	mutex_z_r2_.lock();
 	z = z_r2_;
+	mutex_z_r2_.unlock();
 	ros::Time t = ros::Time::now();
 	simForce.header.stamp = t;
 	simForce.header.frame_id = "r2_force_data_filtered";
@@ -117,14 +125,15 @@ void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
 		{z=0;}
 	else {z=(START_HEIGHT-z)*M_TO_MM;}
 	simForce.wrench.force.z = z * -0.64 * 8 + ((double)std::rand()/RAND_MAX * 20);
-
-	std::cout << "[ " << ros::Time::now() << " ] z_r2: " << z << " Force: " << simForce.wrench.force.z <<std::endl;
+	
 	// simForce.wrench.force.x = computeSingle (z, 0.0025,    1.3178,   -1.4595);
 	// simForce.wrench.force.y = computeSingle (z, -0.0046,   -2.1012,    2.3930);
 	// simForce.wrench.force.z = computeSingle (z, -0.0150 ,  -1.2819 ,   1.0194);
 	// simForce.wrench.torque.x = computeSingle (z, 0.0033  ,  0.5024  , -0.6238);
 	// simForce.wrench.torque.y = computeSingle (z, 0.0014   , 0.3429   ,-0.4181);
 	// simForce.wrench.torque.z = computeSingle (z, 0.0001    ,0.0005   ,-0.0025);
+
+	std::cout << "[ " << ros::Time::now() << " ] z_r2: " << z << " Force: " << simForce.wrench.force.z <<std::endl;
 }
 
 void ForceSimulator::pub(){

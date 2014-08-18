@@ -6,33 +6,33 @@ void getListOfPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector
 
 	for (int i=0; i < 1; i++){
 		blank.x = -0.9;
-		blank.y = 0.4;
+		blank.y = 0.1;
 		waypoints_1.push_back(blank);
-		blank.y = 0.3;
-		waypoints_1.push_back(blank);
-		blank.x = -1.5;
-		blank.y = 0.4;
-		waypoints_1.push_back(blank);
-		blank.x = -0.9;
 		blank.y = 0.5;
 		waypoints_1.push_back(blank);
-		blank.x = -0.9;
-		blank.y = 0.4;
+		blank.x = -1.5;
+		blank.y = 0.5;
 		waypoints_1.push_back(blank);
-
-		blank.x = -0.9;
-		blank.y = -0.4;
-		waypoints_2.push_back(blank);
 		blank.y = -0.3;
+		waypoints_1.push_back(blank);
+		blank.x = -0.9;
+		waypoints_1.push_back(blank);
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+		blank.y = 0.3;
 		waypoints_2.push_back(blank);
 		blank.x = -1.5;
-		blank.y = -0.4;
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+		blank.y = -0.5;
 		waypoints_2.push_back(blank);
 		blank.x = -0.9;
-		blank.y = -0.3;
 		waypoints_2.push_back(blank);
-		blank.x = -0.9;
-		blank.y = -0.3;
+		blank.y = -0.1;
 		waypoints_2.push_back(blank);
 	}
 }
