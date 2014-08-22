@@ -1,11 +1,16 @@
 #include <ros/ros.h>
 #include "ScrollGarment.h"
 
-void getListOfPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector< geometry_msgs::Point>& waypoints_2){
+void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
 	geometry_msgs::Point blank;
 
-	for (int i=0; i < 1; i++){
-		blank.x = -0.9;
+	wp_map_1.clear();
+	wp_map_2.clear();
+
+	std::vector< geometry_msgs::Point> waypoints_1, waypoints_2;
+
+	{
+		blank.x = -1.4;
 		blank.y = 0.1;
 		waypoints_1.push_back(blank);
 		blank.y = 0.5;
@@ -15,12 +20,12 @@ void getListOfPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector
 		waypoints_1.push_back(blank);
 		blank.y = -0.3;
 		waypoints_1.push_back(blank);
-		blank.x = -0.9;
+		blank.x = -1.4;
 		waypoints_1.push_back(blank);
 		blank.y = 0.1;
 		waypoints_1.push_back(blank);
 		
-		blank.x = -0.9;
+		blank.x = -1.4;
 		blank.y = -0.1;
 		waypoints_2.push_back(blank);
 		blank.y = 0.3;
@@ -30,48 +35,260 @@ void getListOfPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector
 		waypoints_2.push_back(blank);
 		blank.y = -0.5;
 		waypoints_2.push_back(blank);
-		blank.x = -0.9;
+		blank.x = -1.4;
 		waypoints_2.push_back(blank);
 		blank.y = -0.1;
 		waypoints_2.push_back(blank);
 	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		blank.x = -1.5;
+		waypoints_1.push_back(blank);
+		blank.x = -0.9;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+		blank.x = -1.5;
+		waypoints_2.push_back(blank);
+		blank.x = -0.9;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -1.0;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.0;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.2;
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);
+		blank.x = -1.5;
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);
+		blank.y = -0.3;
+		waypoints_1.push_back(blank);
+		blank.x = -1.2;
+		waypoints_1.push_back(blank);
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.2;
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+		blank.x = -1.5;
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+		blank.y = -0.5;
+		waypoints_2.push_back(blank);
+		blank.x = -1.2;
+		waypoints_2.push_back(blank);
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.2;
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);
+		blank.y = -0.3;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.1;
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+		blank.y = -0.5;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -1.2;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.2;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -1.3;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.3;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.3;
+		waypoints_1.push_back(blank);
+		blank.x = -1.2;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.3;
+		waypoints_2.push_back(blank);
+		blank.x = -1.2;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		blank.x = -1.3;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+		blank.x = -1.3;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.8;
+		blank.y = 0.15;
+		waypoints_1.push_back(blank);
+		blank.x = -1.2;
+		blank.y = 0.6;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.15;
+		waypoints_2.push_back(blank);
+		blank.x = -1.3;
+		blank.y = 0.4;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.4;
+		blank.y = 0.15;
+		waypoints_1.push_back(blank);
+		blank.x = -1.2;		
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.4;
+		blank.y = -0.15;
+		waypoints_2.push_back(blank);
+		blank.x = -1.2;		
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
 }
 
-// void getListOfPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector< geometry_msgs::Point>& waypoints_2){
-// 	geometry_msgs::Point blank;
+void getListOfTestsPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector< geometry_msgs::Point>& waypoints_2){
+	geometry_msgs::Point blank;
 
-// 	for (int i=0; i < 1; i++){
-// 		blank.x = -0.9+1.5;
-// 		blank.y = 0.4;
-// 		waypoints_1.push_back(blank);
-// 		blank.y = 0.3;
-// 		waypoints_1.push_back(blank);
-// 		blank.x = -1.5+1.5;
-// 		blank.y = 0.4;
-// 		waypoints_1.push_back(blank);
-// 		blank.x = -0.9+1.5;
-// 		blank.y = 0.5;
-// 		waypoints_1.push_back(blank);
-// 		blank.x = -0.9+1.5;
-// 		blank.y = 0.4;
-// 		waypoints_1.push_back(blank);
+	waypoints_1.clear();
+	waypoints_2.clear();
 
-// 		blank.x = -0.9+1.5;
-// 		blank.y = -0.4;
-// 		waypoints_2.push_back(blank);
-// 		blank.y = -0.3;
-// 		waypoints_2.push_back(blank);
-// 		blank.x = -1.5+1.5;
-// 		blank.y = -0.4;
-// 		waypoints_2.push_back(blank);
-// 		blank.x = -0.9+1.5;
-// 		blank.y = -0.3;
-// 		waypoints_2.push_back(blank);
-// 		blank.x = -0.9+1.5;
-// 		blank.y = -0.3;
-// 		waypoints_2.push_back(blank);
-// 	}
-// }
+	for (int i=0; i < 1; i++){
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.y = 0.2+0.001;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.y = -0.2+0.001;
+		waypoints_2.push_back(blank);
+	}
+}
+
+void posOK(int i){
+	std::cout << "\033[1;35mTrajectory " << i << " was successfully executed.\033[0m"<< std::endl;
+}
+
+void posNotOK(int i){
+	std::cout << "\033[1;31mTrajectory " << i << " \033[4;31mwas not\033[24;31m successfully executed.\033[0m"<< std::endl;
+}
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "scrolling_garment_on_the_table");
@@ -79,19 +296,41 @@ int main(int argc, char **argv) {
 	ros::AsyncSpinner spinner(1);
 	spinner.start();
 
+	double force = 15;
+	if (argc == 2) {
+		force = std::stod(argv[1]);
+	}
+
 	clopema_robot::ClopemaRobotCommander ext("ext");
-    ext.setNamedTarget("ext_minus_90");
-    ext.move();
+	ext.setNamedTarget("ext_minus_90");
+	ext.move();
+	ros::Duration(0.1).sleep();
 
 	std::string frame_id = "base_link";
 	std::string table_frame = "t3_desk";
 
-	std::vector< geometry_msgs::Point > waypoints_1, waypoints_2;
-	getListOfPoints(waypoints_1, waypoints_2);
-
+	std::vector<std::vector<geometry_msgs::Point>> waypoints_1, waypoints_2;
+	
 	ScrollGarment sg;
-	sg.table_frame_ = table_frame;
-	sg.moveOverTable(frame_id,	waypoints_1, waypoints_2, table_frame, 35);
+
+	getListOfPoints(waypoints_1, waypoints_2);
+	for (int i=0; i < waypoints_1.size(); i++) {
+		if(sg.moveOverTable(frame_id,	waypoints_1[i], waypoints_2[i], table_frame, force))
+		{
+			posOK(i);
+		}else{
+			posNotOK(i);
+		}
+	}
+
+	// getListOfTestsPoints(waypoints_1, waypoints_2);
+	// if(sg.testWeight(frame_id,	waypoints_1, waypoints_2, table_frame, force))
+	// {
+	// 	posOK();
+	// }else{
+	// 	posNotOK();
+	// }
+
 
 	ROS_INFO_STREAM("GOOD BYE");
 	ros::spinOnce();

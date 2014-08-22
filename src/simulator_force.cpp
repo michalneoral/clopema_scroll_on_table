@@ -11,8 +11,10 @@
 #include <tf/transform_datatypes.h>
 #include <math.h>
 #include <string>
+#include <std_msgs/Float32.h>
+#include "ScrollGarment.h"
 
-#define START_HEIGHT 0.78
+#define START_HEIGHT 0.78//0.85//
 #define M_TO_MM 1000
 
 class ForceSimulator {
@@ -20,8 +22,9 @@ class ForceSimulator {
 public:
 	ForceSimulator(): crc_("arms"){
 		seq_=1;
-
+		add_force_ = 0;
 		sub_joints_ = node_.subscribe("/joint_states", 1, &ForceSimulator::cb_joint, this);
+		sub_add_force_ = node_.subscribe("/add_force", 1, &ForceSimulator::cb_add_force, this);
 
 		pub_force_R1_ = node_.advertise<geometry_msgs::WrenchStamped>("/r1_force_data_filtered", 1);
 		ros::Duration(0.2).sleep();			
@@ -32,6 +35,7 @@ public:
 	}
 	void pub();
 	void cb_joint(const sensor_msgs::JointState& msg);
+	void cb_add_force(const std_msgs::Float32& msg);
 	void force_info_stream(geometry_msgs::WrenchStamped msg);
 	double computeSingle (double z, double a2, double a1, double a0);
 	void computeForceR1 (geometry_msgs::WrenchStamped& simForce);
@@ -40,6 +44,7 @@ public:
 
 public:
 	ros::Subscriber sub_joints_;
+	ros::Subscriber sub_add_force_;
 	ros::Publisher pub_force_R1_;
 	ros::Publisher pub_force_R2_;
 	double seq_;
@@ -52,8 +57,14 @@ public:
 	boost::mutex mutex_z_r2_;
 	double z_r1_;
 	double z_r2_;
+
+	double add_force_;
 };
 
+void ForceSimulator::cb_add_force(const std_msgs::Float32& msg) {
+	ROS_WARN_STREAM(msg);
+	add_force_ = msg.data;
+}
 
 void ForceSimulator::cb_joint(const sensor_msgs::JointState& msg) {
 	robot_state::RobotState rs_link(*crc_.getCurrentState());
@@ -77,9 +88,9 @@ void ForceSimulator::force_info_stream(geometry_msgs::WrenchStamped msg) {
 
 double ForceSimulator::computeSingle (double z, double a2, double a1, double a0){
 	double force=0;
-	if (z>START_HEIGHT)
+	if (z>(START_HEIGHT+ADD_HEIGHT_TEST))
 		{z=0;}
-	else {z=(START_HEIGHT-z)*M_TO_MM;}
+	else {z=((START_HEIGHT+ADD_HEIGHT_TEST)-z)*M_TO_MM;}
 	force += pow(z,2) * (a2);
 	force += z * (a1);
 	force += a0;
@@ -96,10 +107,10 @@ void ForceSimulator::computeForceR1 (geometry_msgs::WrenchStamped& simForce){
 	simForce.header.stamp = t;
 	simForce.header.frame_id = "r1_force_data_filtered";
 	
-	if (z>START_HEIGHT)
+	if (z>(START_HEIGHT+ADD_HEIGHT_TEST))
 		{z=0;}
-	else {z=(START_HEIGHT-z)*M_TO_MM;}
-	simForce.wrench.force.z = z * -0.64 * 8 + ((double)std::rand()/RAND_MAX * 5);
+	else {z=((START_HEIGHT+ADD_HEIGHT_TEST)-z)*M_TO_MM;}
+	simForce.wrench.force.z = z * -0.64 * 8 + ((double)std::rand()/RAND_MAX * 5 - 2.5) + add_force_;
 
 	// simForce.wrench.force.x = computeSingle (z, -0.0138,    1.2562,   -3.2764);
 	// simForce.wrench.force.y = computeSingle (z, -0.0290,   -1.4388,    2.2879);
@@ -121,10 +132,10 @@ void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
 	simForce.header.stamp = t;
 	simForce.header.frame_id = "r2_force_data_filtered";
 	
-	if (z>START_HEIGHT)
+	if (z>(START_HEIGHT+ADD_HEIGHT_TEST))
 		{z=0;}
-	else {z=(START_HEIGHT-z)*M_TO_MM;}
-	simForce.wrench.force.z = z * -0.64 * 8 + ((double)std::rand()/RAND_MAX * 20);
+	else {z=((START_HEIGHT+ADD_HEIGHT_TEST)-z)*M_TO_MM;}
+	simForce.wrench.force.z = z * -0.64 * 8 + ((double)std::rand()/RAND_MAX * 10 - 5) + add_force_;
 	
 	// simForce.wrench.force.x = computeSingle (z, 0.0025,    1.3178,   -1.4595);
 	// simForce.wrench.force.y = computeSingle (z, -0.0046,   -2.1012,    2.3930);

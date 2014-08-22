@@ -11,7 +11,9 @@
 #include <tf/transform_listener.h>
 
 #define ABSOLUTE_MAX_FORCE 50.0 // [N]
-#define RELATIVE_MAX_FORCE 0.05 // [-]
+#define ABSOLUTE_MAX_FORCE_RAW 60 // [N]
+#define ABSOLUTE_MAX_TORQUE_RAW 20 // [Nm]
+#define RELATIVE_MAX_FORCE 0.15 // [-]
 
 class ScrollGarmentForceCB {
 

@@ -50,14 +50,34 @@ void ScrollGarmentForceCB::startSub(std::string name){
 /* @TODO */
 void ScrollGarmentForceCB::computeRotateForce(){
 	Eigen::Affine3d rot;
-	Eigen::Vector3d comForcesVector, comTorquesVector;
+	Eigen::Vector3d comForcesVector, comTorquesVector, erForces, erTorques;
 
 	mutex_forces_.lock();
 	Eigen::Vector3d prepareForces = (forces_ - init_forces_);
+	erForces = forces_;
 	mutex_forces_.unlock();
 	mutex_torques_.lock();
 	Eigen::Vector3d prepareTorques = (torques_ - init_torques_);
+	erTorques = torques_;
 	mutex_torques_.unlock();
+
+	char buffer [1023];
+
+	double maxForce = 0;
+	for (int i=0; i<3; i++){
+		if (maxForce < std::abs(erForces[0])) maxForce = std::abs(erForces[0]);
+	}
+
+	double maxTorque = 0;
+	for (int i=0; i<3; i++){
+		if (maxTorque < std::abs(erTorques[0])) maxTorque = std::abs(erTorques[0]);
+	}
+
+	if (maxForce >= ABSOLUTE_MAX_FORCE_RAW || maxTorque >= ABSOLUTE_MAX_TORQUE_RAW){
+		sprintf(buffer, "The value of force or torque (%.1f N, %.1f Nm) is too much high!", maxForce, maxTorque);
+		ROS_WARN_STREAM(buffer);
+	}
+
 
 	Eigen::MatrixXd mat(3,3);
 	
@@ -72,9 +92,12 @@ void ScrollGarmentForceCB::computeRotateForce(){
 	}
 
 	comForcesVector = prepareForces.transpose() * mat;
-	comTorquesVector = (prepareTorques.transpose() * mat) / lenght_;
-	
+	comTorquesVector = (prepareTorques.transpose() * mat) / lenght_;		
 	computedForce_ = comForcesVector(2);
+	if(computedForce_ > ABSOLUTE_MAX_FORCE){
+		sprintf(buffer, "The value of force (%.1f N) is too much high!", computedForce_);
+		ROS_WARN_STREAM(buffer);
+	}
 
 	// std::cout << ee_name_ << ": " << computedForce_ << std::endl;
 
