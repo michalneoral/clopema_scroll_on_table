@@ -66,10 +66,6 @@ void ScrollGarment::getTestPositions(std::string table_frame , std::vector<geome
 		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 		wp1.push_back(blank);
 
-		blank.position = waypoints_1.front();
-		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;	
-		wp1.push_back(blank);
-
 		for (i = 0; i < waypoints_1.size(); i++){
 			blank.position = waypoints_1[i];
 			blank.position.z = TEST_TRAJECTORY_HEIGHT_MAX + ADD_HEIGHT_TEST + offset;
@@ -99,10 +95,6 @@ void ScrollGarment::getTestPositions(std::string table_frame , std::vector<geome
 		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 		wp2.push_back(blank);
 		
-		blank.position = waypoints_2.front();
-		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;	
-		wp2.push_back(blank);
-
 		for (i = 0; i < waypoints_2.size(); i++){
 			blank.position = waypoints_2[i];
 			blank.position.z = TEST_TRAJECTORY_HEIGHT_MAX + ADD_HEIGHT_TEST + offset;
@@ -112,8 +104,7 @@ void ScrollGarment::getTestPositions(std::string table_frame , std::vector<geome
 		blank.position = waypoints_2.back();
 		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 		wp2.push_back(blank);
-	}
-	
+	}	
 }
 
 void ScrollGarment::showMarkers(std::string table_frame, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2) {
@@ -135,6 +126,20 @@ void ScrollGarment::showMarkers(std::string table_frame, const std::vector<geome
 		allposes.poses.push_back(pose);		
 	}
 	pub_marker_.publish( allposes );
+}
+
+double modulus(double a, double b)
+{
+	if(a <= 0){
+		return modulus(a+b,b);
+	}else{
+		int result = static_cast<int>( a / b );
+		return a - static_cast<double>( result ) * b;
+	}
+}
+
+double mod2pi(double a){
+	return modulus(a, 2*M_PI);
 }
 
 bool ScrollGarment::testTrajectory(std::string table_frame , double& yawR1, double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool& conf){
@@ -168,34 +173,44 @@ bool ScrollGarment::testTrajectory(std::string table_frame , double& yawR1, doub
 
 	
 	for (int i=0; i< angle_number_step; i++) {
-		yawR1 = fmod((2*M_PI + current_yawR1 + i*(2*M_PI/angle_number_step)), (double)2*M_PI);
-		if(std::abs(fmod(std::abs(yawR1-ext_axis_yaw), (double)M_PI)) <= MAX_ANGLE_DIFF){
-			continue;
-		}
+		yawR1 = mod2pi(2*M_PI + current_yawR1 + i*(2*M_PI/angle_number_step));
+		// if( mod2pi(mod2pi(yawR1-ext_axis_yaw) - MAX_ANGLE_DIFF) < MAX_ANGLE_DIFF){// || mod2pi(mod2pi(yawR1-ext_axis_yaw) - MIN_ANGLE_DIFF) < MIN_ANGLE_DIFF){
+		// 	std::cout << "c1";
+		// 	// continue;
+		// }
 
 		for (int j=0; j< angle_number_step; j++) {			
-			yawR2 = fmod((2*M_PI + current_yawR2 + j*(2*M_PI/angle_number_step)), (double)2*M_PI);
-			std::cout << "\033[1;35mHERE IS ERROR. FIND HIM.\033[0m"<< std::endl;
-			if(std::abs(fmod(std::abs(yawR2-ext_axis_yaw), (double)M_PI)) <= MAX_ANGLE_DIFF){
-				continue;
-			}
+			yawR2 = mod2pi(2*M_PI + current_yawR2 + j*(2*M_PI/angle_number_step));
+			// if( mod2pi(mod2pi(yawR2-ext_axis_yaw) - MAX_ANGLE_DIFF) < MAX_ANGLE_DIFF){// || mod2pi(mod2pi(yawR2-ext_axis_yaw) - MIN_ANGLE_DIFF) < MIN_ANGLE_DIFF){
+			// 	std::cout << "c2";
+			// 	continue;
+			// }
+			// std::cout << "\t R1: " << mod2pi(yawR1-ext_axis_yaw) << "\t" << mod2pi(mod2pi(yawR1-ext_axis_yaw) - MAX_ANGLE_DIFF)<< "\t R2: " << mod2pi(yawR2-ext_axis_yaw) << "\t" << mod2pi(mod2pi(yawR2-ext_axis_yaw) - MAX_ANGLE_DIFF) << "\t C: " << mod2pi(MAX_ANGLE_DIFF) << "\t" << mod2pi(MIN_ANGLE_DIFF) << std::endl;
 
 			getTestPositions(table_frame, wp1, wp2, waypoints_1, waypoints_2, yawR1, yawR2, offset);
 			// std::cout << "yawR1: " << yawR1 << "\t yawR2: " << yawR2 << " (" << current_yawR1 << ", " << current_yawR2 << ")" << std::endl;
 
 			moveit_msgs::RobotTrajectory trajectories;
-			if(!planPoses(trajectories, elinks1, elinks2, wp1, wp2, true, STEP, false)){
-				if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, false, STEP, false)){
-					conf = false;	
-					ROS_INFO_STREAM(i*ANGLE_NUMBER_STEP+j+1);				
-					return true;
+			if(!planPoses(trajectories, elinks1, elinks2, wp1, wp2, true, TEST_STEP, false))
+			{
+				if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, false, TEST_STEP, false))
+				{
+					if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, false, STEP, false))
+					{
+						conf = false;	
+						ROS_INFO_STREAM(i*ANGLE_NUMBER_STEP+j+1);				
+						return true;
+					}
 				}
-			} else{
+			} else if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, true, STEP, false))
+			{
 				conf = true;
 				ROS_INFO_STREAM(i*ANGLE_NUMBER_STEP+j+1);
 				return true;
 			}
+
 		}
+		// std::cout << "----------------" << std::endl;
 	}
 	return false;
 }
@@ -232,7 +247,7 @@ void ScrollGarment::transformFromFrameToTable(std::string frame_id, std::string 
 
 geometry_msgs::Quaternion ScrollGarment::transformQuaternion(std::string table_frame,double roll, double pitch, double yaw) {
 	//--------------------------------------------------------------------
-	
+
 	geometry_msgs::Pose pose_tmp;
 	pose_tmp.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
 
@@ -244,7 +259,7 @@ geometry_msgs::Quaternion ScrollGarment::transformQuaternion(std::string table_f
 
 	tf::poseMsgToEigen(pose_tmp, e);
 	e_tmp = e_table.inverse() * e_target * e;
-	
+
 	tf::poseEigenToMsg(e_tmp, pose_tmp);
 	return pose_tmp.orientation;
 }
@@ -448,7 +463,7 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 		tf::poseEigenToMsg(e, pose_tmp);
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
-			// ROS_ERROR("Error - setFromIK 1 ");
+			ROS_ERROR("Error - setFromIK 1 ");
 			return false;
 		}
 
@@ -458,7 +473,7 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 		tf::poseEigenToMsg(e, pose_tmp);
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_2), pose_tmp, tip_2)){
-			// ROS_ERROR("Error - setFromIK 2 ");
+			ROS_ERROR("Error - setFromIK 2 ");
 			return false;
 		}
 
@@ -477,8 +492,8 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 	d = crc_.computeCartesianPathDual(wp1_copy, tip_1, wp2_copy, tip_2, step, JUMP_TRESHOLD, trajectories, false);
 
 	if(!(fabs(d - 1.0) < 0.001)) {
-		// sprintf(buffer, "cannot interpolate up. d = %.4f (%.4f).", d, fabs(d - 1.0));
-		// ROS_WARN_STREAM(buffer);
+		sprintf(buffer, "cannot interpolate up. d = %.4f (%.4f).", d, fabs(d - 1.0));
+		ROS_WARN_STREAM(buffer);
 		// std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << " wp1_copy: " << wp1_copy.size() << " wp2_copy: " << wp2_copy.size() << std::endl;
 		return false;
 	} else{
@@ -784,6 +799,8 @@ bool ScrollGarment::testWeight(	std::string frame_id,	std::vector< geometry_msgs
 		ROS_WARN_STREAM(buffer);
 	}
 	// ==================================== ↑↑↑ INIT ↑↑↑ ====================================
+
+	std::cout << "Here" << std::endl;
 
 	if(testTrajectory(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf)){
 

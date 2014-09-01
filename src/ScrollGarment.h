@@ -40,9 +40,11 @@
 #define PITCH2DESK_R2 (M_PI/2+M_PI/6) //(M_PI/2-M_PI/6)
 #define YAW2DESK_R2 0 // (3*M_PI/4)//(-M_PI/2)
 //-------------------------------------------
-#define ANGLE_NUMBER_STEP 20
-#define MAX_ANGLE_DIFF (M_PI/2+0.05)
+#define ANGLE_NUMBER_STEP 10
+#define MIN_ANGLE_DIFF (-M_PI/2-0.05)
+#define MAX_ANGLE_DIFF (M_PI/2+0.3)
 #define STEP 0.005 // [m]
+#define TEST_STEP 0.1 // [m]
 #define STEP2TABLE 0.001 // [m]
 #define JUMP_TRESHOLD 1.50//0.0//
 //-------------------------------------------

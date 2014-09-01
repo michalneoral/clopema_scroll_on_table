@@ -2,6 +2,7 @@
 #include "ScrollGarment.h"
 
 void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+	//-----------------------------------------------------------------------
 	geometry_msgs::Point blank;
 
 	wp_map_1.clear();
@@ -261,25 +262,27 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 	waypoints_2.clear();
 }
 
-void getListOfTestsPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector< geometry_msgs::Point>& waypoints_2){
+void getListOfTestsPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+	//-----------------------------------------------------------------------
 	geometry_msgs::Point blank;
+	wp_map_1.clear();
+	wp_map_2.clear();
 
-	waypoints_1.clear();
-	waypoints_2.clear();
+	std::vector< geometry_msgs::Point> waypoints_1, waypoints_2;
 
-	for (int i=0; i < 1; i++){
+	{
 		blank.x = -0.9;
 		blank.y = 0.2;
 		waypoints_1.push_back(blank);
-		blank.y = 0.2+0.001;
-		waypoints_1.push_back(blank);
-		
+
 		blank.x = -0.9;
 		blank.y = -0.2;
 		waypoints_2.push_back(blank);
-		blank.y = -0.2+0.001;
-		waypoints_2.push_back(blank);
 	}
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
 }
 
 void posOK(int i){
@@ -297,8 +300,15 @@ int main(int argc, char **argv) {
 	spinner.start();
 
 	double force = 15;
-	if (argc == 2) {
+	int testPos;
+	bool isTest = false;
+	if (argc >= 2) {
 		force = std::stod(argv[1]);
+		if(argc == 3) {
+			testPos = std::stoi(argv[2]);
+			std::cout << testPos << std::endl;
+			isTest = true;
+		}
 	}
 
 	clopema_robot::ClopemaRobotCommander ext("ext");
@@ -310,26 +320,43 @@ int main(int argc, char **argv) {
 	std::string table_frame = "t3_desk";
 
 	std::vector<std::vector<geometry_msgs::Point>> waypoints_1, waypoints_2;
+	std::vector<bool> recap;
 	
 	ScrollGarment sg;
 
-	getListOfPoints(waypoints_1, waypoints_2);
-	for (int i=0; i < waypoints_1.size(); i++) {
-		if(sg.moveOverTable(frame_id,	waypoints_1[i], waypoints_2[i], table_frame, force))
+	if(!isTest){
+		getListOfPoints(waypoints_1, waypoints_2);
+		for (int i=0; i < waypoints_1.size(); i++) {
+			if(sg.moveOverTable(frame_id,	waypoints_1[i], waypoints_2[i], table_frame, force))
+			{
+				posOK(i);
+				recap.push_back(true);
+			}else{
+				posNotOK(i);
+				recap.push_back(false);
+			}
+		}
+	} else {
+		getListOfTestsPoints(waypoints_1, waypoints_2);
+		if(sg.testWeight(frame_id,	waypoints_1[testPos], waypoints_2[testPos], table_frame, force))
+		{
+			posOK(testPos);
+			recap.push_back(true);
+		}else{
+			posNotOK(testPos);
+			recap.push_back(false);
+		}
+	}
+	
+	std::cout << "Con:" << std::endl;
+	for (int i = 0; i < recap.size(); i++){
+		if(recap[i])
 		{
 			posOK(i);
 		}else{
 			posNotOK(i);
 		}
 	}
-
-	// getListOfTestsPoints(waypoints_1, waypoints_2);
-	// if(sg.testWeight(frame_id,	waypoints_1, waypoints_2, table_frame, force))
-	// {
-	// 	posOK();
-	// }else{
-	// 	posNotOK();
-	// }
 
 
 	ROS_INFO_STREAM("GOOD BYE");
