@@ -33,7 +33,7 @@ public:
 
 		ROS_INFO_STREAM("Simulator started");
 	}
-	void pub();
+	void pub(int arm);
 	void cb_joint(const sensor_msgs::JointState& msg);
 	void cb_add_force(const std_msgs::Float32& msg);
 	void force_info_stream(geometry_msgs::WrenchStamped msg);
@@ -147,14 +147,18 @@ void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
 	std::cout << "[ " << ros::Time::now() << " ] z_r2: " << z << " Force: " << simForce.wrench.force.z <<std::endl;
 }
 
-void ForceSimulator::pub(){
+void ForceSimulator::pub(int arm){
 	geometry_msgs::WrenchStamped simForceR1, simForceR2;
 	computeForceR1(simForceR1);
 	computeForceR2(simForceR2);
 	// force_info_stream(simForceR1);
 	// force_info_stream(simForceR2);
-	pub_force_R1_.publish(simForceR1);
-	pub_force_R2_.publish(simForceR2);
+	if(arm == 1 || arm == 0){
+		pub_force_R1_.publish(simForceR1);
+	}
+	if(arm == 2 || arm == 0){
+		pub_force_R2_.publish(simForceR2);
+	}
 	seq_++;
 }
 
@@ -169,10 +173,15 @@ int main(int argc, char **argv) {
 
 	ForceSimulator fs;
 
+	int arm = 0;
+	if( argc >= 2){
+		arm = std::stoi(argv[1]);
+	}
+
 	ros::Rate loop_rate(100);
 	while (ros::ok())
 	{
-		fs.pub();
+		fs.pub(arm);
 		loop_rate.sleep();
 		ros::spinOnce();
 	}

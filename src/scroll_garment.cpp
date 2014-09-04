@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include "ScrollGarment.h"
 
-void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+void getListOfPoints3(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
 	//-----------------------------------------------------------------------
 	geometry_msgs::Point blank;
 
@@ -25,7 +25,7 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		waypoints_1.push_back(blank);
 		blank.y = 0.1;
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -1.4;
 		blank.y = -0.1;
 		waypoints_2.push_back(blank);
@@ -55,32 +55,13 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		waypoints_1.push_back(blank);
 		blank.x = -0.9;
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -0.9;
 		blank.y = -0.1;
 		waypoints_2.push_back(blank);
 		blank.x = -1.5;
 		waypoints_2.push_back(blank);
 		blank.x = -0.9;
-		waypoints_2.push_back(blank);
-	}
-
-	wp_map_1.push_back(waypoints_1);
-	wp_map_2.push_back(waypoints_2);
-	waypoints_1.clear();
-	waypoints_2.clear();
-
-	{
-		blank.x = -0.9;
-		blank.y = 0.2;
-		waypoints_1.push_back(blank);
-		blank.x = -1.0;
-		waypoints_1.push_back(blank);
-		
-		blank.x = -0.9;
-		blank.y = -0.2;
-		waypoints_2.push_back(blank);
-		blank.x = -1.0;
 		waypoints_2.push_back(blank);
 	}
 
@@ -104,7 +85,7 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		waypoints_1.push_back(blank);
 		blank.y = 0.1;
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -1.2;
 		blank.y = -0.1;
 		waypoints_2.push_back(blank);
@@ -132,7 +113,7 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		waypoints_1.push_back(blank);
 		blank.y = -0.3;
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -1.1;
 		blank.y = 0.3;
 		waypoints_2.push_back(blank);
@@ -147,68 +128,11 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 
 	{
 		blank.x = -0.9;
-		blank.y = 0.2;
-		waypoints_1.push_back(blank);
-		blank.x = -1.2;
-		waypoints_1.push_back(blank);
-		
-		blank.x = -0.9;
-		blank.y = -0.2;
-		waypoints_2.push_back(blank);
-		blank.x = -1.2;
-		waypoints_2.push_back(blank);
-	}
-
-	wp_map_1.push_back(waypoints_1);
-	wp_map_2.push_back(waypoints_2);
-	waypoints_1.clear();
-	waypoints_2.clear();
-
-	{
-		blank.x = -0.9;
-		blank.y = 0.2;
-		waypoints_1.push_back(blank);
-		blank.x = -1.3;
-		waypoints_1.push_back(blank);
-		
-		blank.x = -0.9;
-		blank.y = -0.2;
-		waypoints_2.push_back(blank);
-		blank.x = -1.3;
-		waypoints_2.push_back(blank);
-	}
-
-	wp_map_1.push_back(waypoints_1);
-	wp_map_2.push_back(waypoints_2);
-	waypoints_1.clear();
-	waypoints_2.clear();
-
-	{
-		blank.x = -0.9;
-		blank.y = 0.3;
-		waypoints_1.push_back(blank);
-		blank.x = -1.2;
-		waypoints_1.push_back(blank);
-		
-		blank.x = -0.9;
-		blank.y = -0.3;
-		waypoints_2.push_back(blank);
-		blank.x = -1.2;
-		waypoints_2.push_back(blank);
-	}
-
-	wp_map_1.push_back(waypoints_1);
-	wp_map_2.push_back(waypoints_2);
-	waypoints_1.clear();
-	waypoints_2.clear();
-
-	{
-		blank.x = -0.9;
 		blank.y = 0.1;
 		waypoints_1.push_back(blank);
 		blank.x = -1.3;
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -0.9;
 		blank.y = -0.1;
 		waypoints_2.push_back(blank);
@@ -228,7 +152,7 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		blank.x = -1.2;
 		blank.y = 0.6;
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -0.9;
 		blank.y = -0.15;
 		waypoints_2.push_back(blank);
@@ -248,7 +172,7 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		waypoints_1.push_back(blank);
 		blank.x = -1.2;		
 		waypoints_1.push_back(blank);
-		
+
 		blank.x = -1.4;
 		blank.y = -0.15;
 		waypoints_2.push_back(blank);
@@ -256,6 +180,312 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 		waypoints_2.push_back(blank);
 	}
 
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+}
+
+void getListOfPoints1(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+	//-----------------------------------------------------------------------
+	geometry_msgs::Point blank;
+
+	wp_map_1.clear();
+	wp_map_2.clear();
+
+	std::vector< geometry_msgs::Point> waypoints_1, waypoints_2;
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -1.0;
+		waypoints_1.push_back(blank);
+
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.0;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -1.2;
+		waypoints_1.push_back(blank);
+
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.2;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -0.9;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -1.3;
+		waypoints_1.push_back(blank);
+
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.3;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.4;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -0.9;
+		waypoints_1.push_back(blank);
+
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.3;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.4;
+		blank.y = 0.2;
+		waypoints_1.push_back(blank);
+		blank.x = -0.9;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -0.9;
+		blank.y = -0.2;
+		waypoints_2.push_back(blank);
+		blank.x = -1.3;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.0;
+		blank.y = 0.0;
+		waypoints_1.push_back(blank);
+		// blank.x = -0.9;
+		blank.y = 0.13;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.0;
+		blank.y = -0.07;
+		waypoints_2.push_back(blank);
+		blank.y = -0.07;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.0;
+		blank.y = 0.07;
+		waypoints_1.push_back(blank);
+		// blank.x = -0.9;
+		blank.y = 0.07;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.0;
+		blank.y = -0.0;
+		waypoints_2.push_back(blank);
+		blank.y = -0.13;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.5;
+		blank.y = 0.13;
+		waypoints_1.push_back(blank);
+		blank.x = -1.4;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.5;
+		blank.y = -0.07;
+		waypoints_2.push_back(blank);
+		blank.x = -1.4;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.4;
+		blank.y = 0.13;
+		waypoints_1.push_back(blank);
+		blank.x = -1.0;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.4;
+		blank.y = -0.07;
+		waypoints_2.push_back(blank);
+		blank.x = -1.0;
+		waypoints_2.push_back(blank);
+	}
+
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+}
+
+void getListOfPoints2(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+	geometry_msgs::Point blank;
+
+	wp_map_1.clear();
+	wp_map_2.clear();
+
+	std::vector< geometry_msgs::Point> waypoints_1, waypoints_2;
+
+	{
+		blank.x = -1.4;
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);
+		blank.x = -1.4;
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+	}
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);
+		blank.x = -1.5;
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);		
+
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+		blank.x = -1.5;
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);		
+	}
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.5;
+		blank.y = 0.5;
+		waypoints_1.push_back(blank);
+		blank.y = -0.3;
+		waypoints_1.push_back(blank);
+		
+		blank.x = -1.5;
+		blank.y = 0.3;
+		waypoints_2.push_back(blank);
+		blank.y = -0.5;
+		waypoints_2.push_back(blank);		
+	}
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.y = -0.3;
+		waypoints_1.push_back(blank);
+		blank.x = -1.4;
+		waypoints_1.push_back(blank);
+
+		blank.y = -0.5;
+		waypoints_2.push_back(blank);
+		blank.x = -1.4;
+		waypoints_2.push_back(blank);
+	}
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+
+	{
+		blank.x = -1.4;
+		waypoints_1.push_back(blank);
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+
+		blank.x = -1.4;
+		waypoints_2.push_back(blank);
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+	}
+	wp_map_1.push_back(waypoints_1);
+	wp_map_2.push_back(waypoints_2);
+	waypoints_1.clear();
+	waypoints_2.clear();
+}
+
+void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+	geometry_msgs::Point blank;
+
+	wp_map_1.clear();
+	wp_map_2.clear();
+
+	std::vector< geometry_msgs::Point> waypoints_1, waypoints_2;
+
+	{
+		// blank.x = -0.9;
+		blank.x = -0.9;
+		blank.y = 0.1;
+		waypoints_1.push_back(blank);
+		blank.x = -1.7;
+		waypoints_1.push_back(blank);
+
+		// blank.x = -0.9;
+		blank.x = -0.9;
+		blank.y = -0.1;
+		waypoints_2.push_back(blank);
+		blank.x = -1.7;
+		waypoints_2.push_back(blank);
+	}
 	wp_map_1.push_back(waypoints_1);
 	wp_map_2.push_back(waypoints_2);
 	waypoints_1.clear();
@@ -327,7 +557,8 @@ int main(int argc, char **argv) {
 	if(!isTest){
 		getListOfPoints(waypoints_1, waypoints_2);
 		for (int i=0; i < waypoints_1.size(); i++) {
-			if(sg.moveOverTable(frame_id,	waypoints_1[i], waypoints_2[i], table_frame, force))
+			if(sg.moveOverTablePiecewise(frame_id,	waypoints_1[i], waypoints_2[i], table_frame, force))
+			// if(sg.moveOverTable(frame_id,	waypoints_1[i], waypoints_2[i], table_frame, force))
 			{
 				posOK(i);
 				recap.push_back(true);

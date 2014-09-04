@@ -15,6 +15,7 @@
 #include <moveit/robot_state/conversions.h>
 #include <visualization_msgs/Marker.h>
 #include "ScrollGarmentForceCB.h"
+#include "ScrollGarmentSinglePathConfig.h"
 #include "TrajectoryPublisherScroll.h"
 #include <tf_conversions/tf_eigen.h>
 
@@ -40,11 +41,11 @@
 #define PITCH2DESK_R2 (M_PI/2+M_PI/6) //(M_PI/2-M_PI/6)
 #define YAW2DESK_R2 0 // (3*M_PI/4)//(-M_PI/2)
 //-------------------------------------------
-#define ANGLE_NUMBER_STEP 10
+#define ANGLE_NUMBER_STEP 13
 #define MIN_ANGLE_DIFF (-M_PI/2-0.05)
 #define MAX_ANGLE_DIFF (M_PI/2+0.3)
 #define STEP 0.005 // [m]
-#define TEST_STEP 0.1 // [m]
+#define TEST_STEP 0.5 // [m]
 #define STEP2TABLE 0.001 // [m]
 #define JUMP_TRESHOLD 1.50//0.0//
 //-------------------------------------------
@@ -66,12 +67,16 @@ class ScrollGarment {
 public:
 	ScrollGarment();
 
+	bool moveOverTablePiecewise(	std::string frame_id,	std::vector< geometry_msgs::Point >& waypoints_1,	std::vector< geometry_msgs::Point >& waypoints_2,	std::string table_frame,	double force);
+
 	bool moveOverTable( std::string frame_id, std::vector< geometry_msgs::Point >& waypoints_1, std::vector< geometry_msgs::Point >& waypoints_2, std::string table_frame, double force);
 
 	bool testWeight(	std::string frame_id,	std::vector< geometry_msgs::Point >& waypoints_1,
 		std::vector< geometry_msgs::Point >& waypoints_2,	std::string table_frame,	double force);
 
-private:
+	void showForces();
+
+// private:
 	void getListOfCollisions(std::vector<std::string>& elinks1,std::vector<std::string>& elinks2, std::string table_frame);
 
 	int pressOnTheTable(std::string table_frame , const double& yawR1, const double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool conf, double force);
@@ -80,11 +85,15 @@ private:
 
 	bool testTrajectory(std::string table_frame , double& yawR1, double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool& conf);
 
+	bool findBiggestTrajectory(std::string table_frame , double& yawR1, double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool& conf, double& percent_of_path);
+
 	void transformFromFrameToTable(std::string frame_id, std::string table_frame, std::vector<geometry_msgs::Point >& waypoints_1, std::vector< geometry_msgs::Point >& waypoints_2);
 
 	geometry_msgs::Quaternion transformQuaternion(std::string table_frame,double roll, double pitch, double yaw);
 
 	bool planPoses(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state);
+
+	bool planPoses(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state, double& percent_of_path, bool& isBiggest);
 
 	bool startStopPosition(std::string table_frame , const double& yawR1, const double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, const bool& conf, bool start);
 
@@ -102,14 +111,30 @@ private:
 
 	void showMarkers(std::string table_frame, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2);
 
+	bool testWaypointsPosition(const std::vector<geometry_msgs::Point> waypoints_1, const std::vector<geometry_msgs::Point> waypoints_2);
 
+	void getLowerPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, ScrollGarmentSinglePathConfig& singlePathConfig);
+
+	void getUpperPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, ScrollGarmentSinglePathConfig& singlePathConfig);
+
+	void getCombinePositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, ScrollGarmentSinglePathConfig& singlePathConfig);
+
+	void getPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, const std::vector< geometry_msgs::Point >& waypoints_1, const	std::vector< geometry_msgs::Point >& waypoints_2, double yawR1, double yawR2, const std::vector<double> height);
+	
+	double testPathConfig(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state, const double percent_of_path, bool& isBiggest);
+
+	bool findBiggestTrajectory(ScrollGarmentSinglePathConfig& currentPathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2);
+
+	bool startStopPosition(ScrollGarmentSinglePathConfig& singlePathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool start);
+
+	int pressOnTheTable(ScrollGarmentSinglePathConfig& singlePathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, double force);
 
 public:
+	std::string table_frame_;
 	clopema_robot::ClopemaRobotCommander crc_;
 
 private:
-	std::string table_frame_;
-
+	
 	ScrollGarmentForceCB WrenchR1_;
 	ScrollGarmentForceCB WrenchR2_;	
 

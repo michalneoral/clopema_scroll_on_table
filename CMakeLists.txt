@@ -217,13 +217,13 @@ add_executable(height_according_force src/height_according_force.cpp)
 target_link_libraries(height_according_force ${catkin_LIBRARIES})
 add_dependencies(height_according_force ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
-add_executable(test_mishmash src/test_mishmash.cpp src/ScrollGarment.cpp src/ScrollGarmentForceCB.cpp src/TrajectoryPublisherScroll.cpp)
+add_executable(test_mishmash src/test_mishmash.cpp src/ScrollGarment.cpp src/ScrollGarmentForceCB.cpp src/TrajectoryPublisherScroll.cpp src/ScrollGarmentSinglePathConfig.cpp)
 target_link_libraries(test_mishmash ${catkin_LIBRARIES})
 #add_dependencies(test_mishmash ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
 add_executable(simulator_force src/simulator_force.cpp)
 target_link_libraries(simulator_force ${catkin_LIBRARIES})
 
-add_executable(scroll_garment src/scroll_garment.cpp src/ScrollGarment.cpp src/ScrollGarmentForceCB.cpp src/TrajectoryPublisherScroll.cpp)
+add_executable(scroll_garment src/scroll_garment.cpp src/ScrollGarment.cpp src/ScrollGarmentForceCB.cpp src/TrajectoryPublisherScroll.cpp src/ScrollGarmentSinglePathConfig.cpp)
 target_link_libraries(scroll_garment ${catkin_LIBRARIES})
 #add_dependencies(scroll_garment ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)

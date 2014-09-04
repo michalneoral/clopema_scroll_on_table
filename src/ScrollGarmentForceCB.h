@@ -28,6 +28,7 @@ public:
 	void setInitialize();
 	void setLenght();
 	bool isForceOk(double force);
+	void showForces();
 
 public:
 	std::string force_topic_name_;

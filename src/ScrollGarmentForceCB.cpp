@@ -4,7 +4,6 @@ ScrollGarmentForceCB::ScrollGarmentForceCB(){
 	init_forces_ = Eigen::Vector3d(0,0,0);
 	init_torques_ = Eigen::Vector3d(0,0,0);
 	ready_ = false;
-
 }
 
 void ScrollGarmentForceCB::setInitialize(){
@@ -163,4 +162,22 @@ void ScrollGarmentForceCB::setLenght(){
 		}
 		rate.sleep();
 	}
+}
+
+void ScrollGarmentForceCB::showForces(){
+	char buffer [1023];
+	mutex_forces_.lock();
+	mutex_torques_.lock();
+	mutex_computedForce_.lock();
+	sprintf(buffer, "%7.2f -> \t%7.2f\t%7.2f\t%7.2f\t%7.2f\t%7.2f", computedForce_, forces_(0), forces_(1), forces_(2), torques_(0), torques_(1), torques_(2));
+	mutex_computedForce_.unlock();
+	mutex_torques_.unlock();
+	mutex_forces_.unlock();
+	
+	if(std::abs(computedForce_) >= ABSOLUTE_MAX_FORCE){
+		std::cout << "\033[1;39mForce " << ee_name_ << buffer << "\033[0m"<< std::endl;
+	} else {
+		std::cout << "\033[1;40mForce " << ee_name_ << buffer << "\033[0m"<< std::endl;
+	}
+
 }
