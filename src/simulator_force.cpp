@@ -102,6 +102,7 @@ void ForceSimulator::computeForceR1 (geometry_msgs::WrenchStamped& simForce){
 	double z;
 	mutex_z_r1_.lock();
 	z = z_r1_;
+	std::cout << "[ " << ros::Time::now() << " ] z: " << z;
 	mutex_z_r1_.unlock();
 	ros::Time t = ros::Time::now();
 	simForce.header.stamp = t;
@@ -119,7 +120,7 @@ void ForceSimulator::computeForceR1 (geometry_msgs::WrenchStamped& simForce){
 	// simForce.wrench.torque.y = computeSingle (z, -0.0016,   0.3460,   -0.5092);
 	// simForce.wrench.torque.z = computeSingle (z, -0.0004,   0.0016,    0.0081);
 
-	std::cout << "[ " << ros::Time::now() << " ] z_r1: " << z << " Force: " << simForce.wrench.force.z << std::endl;
+	std::cout << ", z_r1: " << z << " Force: " << simForce.wrench.force.z << std::endl;
 }
 
 void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
@@ -127,6 +128,7 @@ void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
 	double z;
 	mutex_z_r2_.lock();
 	z = z_r2_;
+	std::cout << "[ " << ros::Time::now() << " ] z: " << z;
 	mutex_z_r2_.unlock();
 	ros::Time t = ros::Time::now();
 	simForce.header.stamp = t;
@@ -144,7 +146,7 @@ void ForceSimulator::computeForceR2 (geometry_msgs::WrenchStamped& simForce){
 	// simForce.wrench.torque.y = computeSingle (z, 0.0014   , 0.3429   ,-0.4181);
 	// simForce.wrench.torque.z = computeSingle (z, 0.0001    ,0.0005   ,-0.0025);
 
-	std::cout << "[ " << ros::Time::now() << " ] z_r2: " << z << " Force: " << simForce.wrench.force.z <<std::endl;
+	std::cout << ", z_r2: " << z << " Force: " << simForce.wrench.force.z <<std::endl;
 }
 
 void ForceSimulator::pub(int arm){

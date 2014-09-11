@@ -16,19 +16,39 @@
 #include <visualization_msgs/Marker.h>
 #include <tf_conversions/tf_eigen.h>
 
+#define OFFSET 0.001
+
 class ScrollGarmentSinglePathConfig {
 
 public:
 	ScrollGarmentSinglePathConfig();
 
+	ScrollGarmentSinglePathConfig(const ScrollGarmentSinglePathConfig&){
+	};
+
+	ScrollGarmentSinglePathConfig& operator=(const ScrollGarmentSinglePathConfig& a){
+		lowerTrajPercentage_ = a.lowerTrajPercentage_;
+		upperTrajPercentage_ = a.upperTrajPercentage_;
+		centerTrajPercentage_ = a.centerTrajPercentage_;
+		centerTrajSteps_ = a.centerTrajSteps_;
+		yawR1_ = a.yawR1_;
+		yawR2_ = a.yawR2_;
+		configuration_ = a.configuration_;
+		short_waypoints_1_ = a.short_waypoints_1_;
+		short_waypoints_2_ = a.short_waypoints_2_;
+	};
+
+	bool isEqual(const ScrollGarmentSinglePathConfig& a);
+
 	double getPercentage();
+
+	double getLPer();
+
+	double getUPer();
 
 	void changeWaypoint1(geometry_msgs::Point p1, geometry_msgs::Point p2);
 
 	void changeWaypoint2(geometry_msgs::Point p1, geometry_msgs::Point p2);
-
-	lowerTrajPercentage_ = 0;
-	upperTrajPercentage_ = 0;
 
 public:
 	// moveit_msgs::RobotTrajectory lowerTraj_;
@@ -36,6 +56,9 @@ public:
 	
 	double lowerTrajPercentage_;
 	double upperTrajPercentage_;
+	double centerTrajPercentage_;
+	int centerTrajSteps_;
+
 	double yawR1_;
 	double yawR2_;
 	bool configuration_;
@@ -44,6 +67,5 @@ public:
 	std::vector< geometry_msgs::Point > short_waypoints_2_;
 
 };
-
 
 #endif

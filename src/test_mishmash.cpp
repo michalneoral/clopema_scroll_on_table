@@ -46,8 +46,9 @@
 // }
 
 // double findPath(trajectory_msgs::JointTrajectory& trajectory){
-	
+
 // }
+
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "test_mishmash");
@@ -60,25 +61,46 @@ int main(int argc, char **argv) {
 	// std::vector< geometry_msgs::Point > waypoints_1, waypoints_2;
 	// getListOfPoints(waypoints_1, waypoints_2);
 
-	ScrollGarment sg;
-	sg.table_frame_ = table_frame;
-
-	while(ros::ok()){
-		sg.showForces();
-		ros::Duration(0.1).sleep();
-	}
+	// ScrollGarment sg;
+	// sg.table_frame_ = table_frame;
+	// while(ros::ok()){
+	// 	sg.showForces();
+	// 	ros::Duration(0.1).sleep();
+	// }
 
 	// ROS_INFO_STREAM("Good Bye");
 
-	// clopema_robot::ClopemaRobotCommander ext("ext");
-	// ext.setNamedTarget("ext_minus_90");
-	// ext.move();
+	clopema_robot::ClopemaRobotCommander ext("ext");
+	ext.setNamedTarget("ext_minus_90");
+	ext.move();
 
-	// clopema_robot::ClopemaRobotCommander crc("r1_arm");
-	// crc.setPoseReferenceFrame("base_link");    
-	// geometry_msgs::Pose p;
-	// robot_state::RobotState rs(*crc.getCurrentState());
-	// crc.setStartState(rs);
+	clopema_robot::ClopemaRobotCommander home("arms");
+	home.setNamedTarget("home_arms");
+	home.move();
+
+	std::vector<std::string> joint_names;
+	joint_names.push_back("r1_joint_s");
+	joint_names.push_back("r1_joint_l");
+	joint_names.push_back("r1_joint_u");
+	joint_names.push_back("r1_joint_r");
+	joint_names.push_back("r1_joint_b");
+	joint_names.push_back("r1_joint_t");
+	joint_names.push_back("r2_joint_s");
+	joint_names.push_back("r2_joint_l");
+	joint_names.push_back("r2_joint_u");
+	joint_names.push_back("r2_joint_r");
+	joint_names.push_back("r2_joint_b");
+	joint_names.push_back("r2_joint_t");
+	joint_names.push_back("ext_axis");
+
+	clopema_robot::ClopemaRobotCommander crc("arms");
+	crc.setPoseReferenceFrame("base_link");    
+	geometry_msgs::Pose p;
+	robot_state::RobotState rs(*crc.getCurrentState());
+	for(int i=0; i<joint_names.size(); i++){
+		std::cout << joint_names[i] << ": "<< rs.getVariablePosition (joint_names[i]) << std::endl; 
+	}
+	crc.setStartState(rs);
 
 	// p.position.x = -0.9;
 	// p.position.y = 0.1;

@@ -323,7 +323,8 @@ int ScrollGarment::pressOnTheTable(std::string table_frame , const double& yawR1
 	}
 }
 
-bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR1, const double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool conf, double force) {	//----------------------------------------------------------------------------
+bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR1, const double& yawR2, const std::vector< geometry_msgs::Point >& waypoints_1,	const std::vector< geometry_msgs::Point >& waypoints_2, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool conf, double force) {	
+	//----------------------------------------------------------------------------
 
 	std::vector<geometry_msgs::Pose> wp1, wp2;
 	geometry_msgs::Pose blank;
@@ -341,7 +342,7 @@ bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR
 			blank.position = waypoints_1[i];
 			mutex_z_r1_.lock();
 			blank.position.z = z_r1_ + (WrenchR1_.getForce() - force) * FORCE_CONST;
-			std::cout << "R1: old z= " << z_r1_ << " new z= " << blank.position.z << " force: " << WrenchR1_.getForce() << std::endl;
+			// std::cout << "R1: old z= " << z_r1_ << " new z= " << blank.position.z << " force: " << WrenchR1_.getForce() << std::endl;
 			mutex_z_r1_.unlock();
 			blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
 			wp1.push_back(blank);
@@ -349,7 +350,7 @@ bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR
 			blank.position = waypoints_2[i];
 			mutex_z_r2_.lock();
 			blank.position.z = z_r2_ + (WrenchR2_.getForce() - force) * FORCE_CONST;
-			std::cout << "R2: old z= " << z_r2_ << " new z= " << blank.position.z << " force: " << WrenchR2_.getForce() << std::endl;
+			// std::cout << "R2: old z= " << z_r2_ << " new z= " << blank.position.z << " force: " << WrenchR2_.getForce() << std::endl;
 			mutex_z_r2_.unlock();
 			blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
 			wp2.push_back(blank);
@@ -357,7 +358,7 @@ bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR
 
 			if(planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP, true)){
 				trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
-				std::cout << "[scrollOverTable] Trajectory size: " << trajectory.joint_trajectory.points.size() << std::endl;
+				// std::cout << "[scrollOverTable] Trajectory size: " << trajectory.joint_trajectory.points.size() << std::endl;
 				if (trajectory.joint_trajectory.points.size() <= 4 || nextnext){
 					next = true;
 				} else if (trajectory.joint_trajectory.points.size() <= 7){
@@ -370,9 +371,9 @@ bool ScrollGarment::scrollOverTable(std::string table_frame , const double& yawR
 					ROS_ERROR("Cannot move.");
 					return 0;
 				}
-			}else{
+			}else{				
 				ROS_ERROR("Trajectory wasn't found.");
-				return 0;
+				return 0;				
 			}			
 		}
 	}
@@ -385,12 +386,16 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 	std::vector<geometry_msgs::Pose> wp1, wp2;
 	moveit_msgs::RobotTrajectory trajectory;
 	geometry_msgs::Pose blank;
-	// Prepare poses 
+	// Prepare poses
+
+	std::cout << yawR1 << " \t" << yawR2 << "\t\t" << conf << "\t" << waypoints_1.size() << "\t" << waypoints_2.size() << std::endl;
+
 	if(start){
 		blank.position = waypoints_1[0];
 		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
-		wp1.push_back(blank);
+		wp1.push_back(blank); 
+		// wp1.push_back(blank);
 		blank.position.z = OVER_TABLE_HEIGHT + ADD_HEIGHT_TEST;
 		wp1.push_back(blank);
 
@@ -399,6 +404,7 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
 		
 		wp2.push_back(blank);
+		// wp2.push_back(blank);
 		blank.position.z = OVER_TABLE_HEIGHT + ADD_HEIGHT_TEST;
 		wp2.push_back(blank);
 	} else {
@@ -413,20 +419,26 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 		wp2.push_back(blank);
 	}
 
-	std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << std::endl;
+	// std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << std::endl; 
 
-	if(planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP, true)){
+	if(planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP_START_STOP, JUMP_TRESHOLD_NONE, true)){
 		trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
 		add_current_state_to_trajectory(trajectory.joint_trajectory);
 		pub_traj_.controle(trajectory.joint_trajectory);
 		return crc_.execute_traj(trajectory.joint_trajectory);
-	}else{
+	}else{		
 		ROS_ERROR("Cannot interpolate");
 		return false;
 	}
 }
 
+
 bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state){
+	//------------------------------------------------------------------------
+	return planPoses(trajectories, elinks1, elinks2, wp1, wp2, first_combination, step, JUMP_TRESHOLD, current_state);
+}
+
+bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, double jump_treshold, bool current_state){
 	//------------------------------------------------------------------------
 
 	char buffer [100];
@@ -462,20 +474,33 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 		pose_tmp = wp1_copy.front();
 		tf::poseMsgToEigen(pose_tmp, e);
 		e_tmp = e_target.inverse() * e_table * e;
-		tf::poseEigenToMsg(e, pose_tmp);
+		tf::poseEigenToMsg(e_tmp, pose_tmp);
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
 			ROS_ERROR("Error - setFromIK 1 ");
-			return false;
+			// crc_.setPoseReferenceFrame(table_frame_);
+			// return false;
 		}
 
 		pose_tmp = wp2_copy.front();
 		tf::poseMsgToEigen(pose_tmp, e);
 		e_tmp = e_target.inverse() * e_table * e;
-		tf::poseEigenToMsg(e, pose_tmp);
+		tf::poseEigenToMsg(e_tmp, pose_tmp);
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_2), pose_tmp, tip_2)){
 			ROS_ERROR("Error - setFromIK 2 ");
+			crc_.setPoseReferenceFrame(table_frame_);
+			return false;
+		}
+
+		pose_tmp = wp1_copy.front();
+		tf::poseMsgToEigen(pose_tmp, e);
+		e_tmp = e_target.inverse() * e_table * e;
+		tf::poseEigenToMsg(e_tmp, pose_tmp);
+
+		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
+			ROS_ERROR("Error - setFromIK 1 ");
+			crc_.setPoseReferenceFrame(table_frame_);
 			return false;
 		}
 
@@ -486,12 +511,8 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 		// ROS_WARN_STREAM("WAS ERASED");
 	}
 	crc_.setStartState(rs);
-	// for (int i=0; i<max; i++){
-	// 	std::cout << rs.getVariablePositions()[i] << "  ";
-	// }
-	// std::cout << std::endl << "-----------------------------------------------" << std::endl;
-	
-	d = crc_.computeCartesianPathDual(wp1_copy, tip_1, wp2_copy, tip_2, step, JUMP_TRESHOLD, trajectories, false);
+
+	d = crc_.computeCartesianPathDual(wp1_copy, tip_1, wp2_copy, tip_2, step, jump_treshold, trajectories, false);
 
 	if(!(fabs(d - 1.0) < 0.001)) {
 		sprintf(buffer, "cannot interpolate up. d = %.4f (%.4f).", d, fabs(d - 1.0));
@@ -568,6 +589,7 @@ void ScrollGarment::add_current_state_to_trajectory(trajectory_msgs::JointTrajec
 
 	robot_state::RobotState rs(*crc_.getCurrentState());
 	crc_.setStartState(rs);
+	crc_.setStartStateToCurrentState();
 
 	BOOST_FOREACH(const std::string & jn, joint_names) {
 		trajectory.joint_names.push_back(jn);
@@ -945,97 +967,167 @@ bool ScrollGarment::moveOverTablePiecewise(	std::string frame_id,	std::vector< g
 	
 	// ==================================== ↑↑↑ INIT ↑↑↑ ====================================
 
-	ScrollGarmentSinglePathConfig currentSinglePathConfig, biggestSinglePathConfig;
-
+	ScrollGarmentSinglePathConfig currentPathConfig, previousPathConfig;
 		//TODO
 
 		//Basic test of existence path - necessary but not sufficient condition
 	ROS_INFO_STREAM("Testting IK of waypoints...");
-	if(!testWaypoinsPosition(waypoints_1, waypoints_2)){
+	if(!testWaypointsPosition(waypoints_1, waypoints_2)){
 		ROS_ERROR("Path does not exist. Cannot set IK for some waypoint");
 		return false;
 	}
+	ROS_INFO_STREAM("...is OK.");
 
 	for (int i = 0; i < waypoints_1.size()-1; i++){
 
-		currentSinglePathConfig.changeWaypoint1(waypoints_1[i], waypoints_1[i+1]);
-		currentSinglePathConfig.changeWaypoint2(waypoints_2[i], waypoints_2[i+1]);
-			//TODO - FIND PART OF TRAJECTORY
-
-			findBiggestTrajectory(currentSinglePathConfig, elinks1, elinks2)
-
-			//TODO - IF TRAJECTORY IS NOT COMPLETE - FIND AND ADD LAST POINT OF TRAJECTORY TO WAYPOINTS
-
-			//TODO - MOVE FOUND PART OF TRAJECTORY
+		currentPathConfig.changeWaypoint1(waypoints_1[i], waypoints_1[i+1]);
+		currentPathConfig.changeWaypoint2(waypoints_2[i], waypoints_2[i+1]);
 
 
-		{ 
+
+			// FIND PART OF (OR WHOLE) TRAJECTORY
+		if(!findBiggestTrajectory(currentPathConfig, elinks1, elinks2)){
+			
+			// CONTROL MINIMALY LENGHT OF TRAJECTORY, NUMBER OF STEPS AND PERCENTAGE
+			// 	- TESTING OF [ZACYKLENÍ]
+
+			// 
+			{
+				std::cout << "DISTANCES 1: " << getLenght(waypoints_1, i, false) << " (" << getLenght(currentPathConfig.short_waypoints_1_) << ")" << std::endl;
+				std::cout << "DISTANCES 2: " << getLenght(waypoints_2, i, false) << " (" << getLenght(currentPathConfig.short_waypoints_2_) << ")" << std::endl;
+				
+				if(currentPathConfig.isEqual(previousPathConfig)){
+					std::cout << "\033[1;33mSame like prev.\033[0m"<< std::endl; //]]
+				}
+
+				if(currentPathConfig.isEqual(previousPathConfig) && getLenght(waypoints_1, i, false) < MINIMAL_DISTANCE &&  getLenght(waypoints_2, i, false) < MINIMAL_DISTANCE ) {
+					return 0;					
+				}
+
+				if(currentPathConfig.isEqual(previousPathConfig) && getLenght(currentPathConfig.short_waypoints_1_) < MINIMAL_DISTANCE &&  getLenght(currentPathConfig.short_waypoints_2_) < MINIMAL_DISTANCE ) {
+					return 0;					
+				}
+			}
+
+			// IF TRAJECTORY IS NOT COMPLETE - FIND AND ADD LAST POINT OF TRAJECTORY TO WAYPOINTS
+			previousPathConfig = currentPathConfig;
+			std::vector<geometry_msgs::Point>::iterator it;
+			it = waypoints_1.begin();
+			waypoints_1.insert(it+1+i , currentPathConfig.short_waypoints_1_.back());
+			it = waypoints_2.begin();
+			waypoints_2.insert(it+1+i , currentPathConfig.short_waypoints_2_.back());
+		}
+
+		// std::cout << currentPathConfig.yawR1_ << "\t\t" << currentPathConfig.yawR2_ << std::endl;
+
+			// MOVE PART
+		{
+			{ 
 			// OPEN GRIPPER
-			if(crc_.execute_traj(crc_.gripper_trajectory(clopema_robot::GRIPPER_OPEN))){
-				ROS_INFO_STREAM("Open grippers OK.");
-			} else {
-				ROS_ERROR("Cannot open grippers.");
+				if(crc_.execute_traj(crc_.gripper_trajectory(clopema_robot::GRIPPER_OPEN))){
+					ROS_INFO_STREAM("Open grippers OK.");
+				} else {
+					ROS_ERROR("Cannot open grippers.");
+				}
 			}
-		}
 
-		{ 
-			// GO TO START POSITION :: TODO - Change it to ScrollGarmentSinglePathConfig
-			if( !startStopPosition(currentSinglePathConfig, elinks1, elinks2, true) ){
-				ROS_ERROR("Cannot execution move to the start position.");
-				crc_.setServoPowerOff();
-				return false;
-			} else {
-				ROS_INFO_STREAM("Start position OK.");
-			}
-		}
-
-		ros::Duration(SLEEP_AFTER_EXEC).sleep();
-
-		WrenchR1_.setInitialize();
-		WrenchR2_.setInitialize();
-
-
-		{ 
-			// Press down on the table :: TODO - Change it to ScrollGarmentSinglePathConfig
-			while(true){
-				int statueOfPress = pressOnTheTable(currentSinglePathConfig, elinks1, elinks2, force);
-				if( statueOfPress == 0){
-					ROS_ERROR("Cannot press on the table.");
+			{ 
+			// GO TO START POSITION
+				if( !startStopPosition(currentPathConfig, elinks1, elinks2, START) ){
+					ROS_ERROR("Cannot execution move to the start position.");
 					crc_.setServoPowerOff();
 					return false;
-				} else if (statueOfPress == 2){
-					break;
+				} else {
+					ROS_INFO_STREAM("Start position OK.");
+				}
+			}
+
+			ros::Duration(SLEEP_AFTER_EXEC).sleep();
+
+			WrenchR1_.setInitialize();
+			WrenchR2_.setInitialize();
+
+
+			{ 
+			// Press down on the table
+				while(true){
+					int statueOfPress = pressOnTheTable(currentPathConfig, elinks1, elinks2, force);
+					if( statueOfPress == 0){
+						ROS_ERROR("Cannot press on the table.");
+						crc_.setServoPowerOff();
+						return false;
+					} else if (statueOfPress == 2){
+						break;
+					}
+				}
+			}
+			ROS_INFO_STREAM("Press on table OK.");
+			ros::Duration(SLEEP_AFTER_EXEC).sleep();
+
+			{ 
+			// Scroll over table
+				bool split = true;
+				if(!scrollOverTable(currentPathConfig, elinks1, elinks2, force)){
+					if (split) {						
+						if (sub_traj_ > MAX_SUB_TRAJ) {
+							sub_traj_ += 0.05;
+							i -= 1;
+							continue;
+						} else {
+							sub_traj_ = 0;
+							return 0;
+						}
+					} else {
+						ROS_ERROR("Cannot scroll.");
+						crc_.setServoPowerOff();
+						return false;
+					}
+				} else {
+					sub_traj_ = 0;
+					ROS_INFO_STREAM("Scroll garment on a table OK.");
+				}
+			}
+
+			{ 
+			// Stop position
+				if( !startStopPosition(currentPathConfig, elinks1, elinks2, STOP) ){
+					ROS_ERROR("Cannot execution move to the end position.");
+					crc_.setServoPowerOff();
+					return false;
+				} else {
+					ROS_INFO_STREAM("Stop position OK.");
 				}
 			}
 		}
-		ROS_INFO_STREAM("Press on table OK.");
-		ros::Duration(SLEEP_AFTER_EXEC).sleep();
-
-		{ 
-			// Scroll over table :: TODO - Change it to ScrollGarmentSinglePathConfig
-			if(!scrollOverTable(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, force)){
-				ROS_ERROR("Cannot scroll.");
-				crc_.setServoPowerOff();
-				return false;
-			} else {
-				ROS_INFO_STREAM("Scroll garment on a table OK.");
-			}
-		}
-
-		{ 
-			// Stop position :: TODO - Change it to ScrollGarmentSinglePathConfig
-			if( !startStopPosition(currentSinglePathConfig, elinks1, elinks2, false) ){
-				ROS_ERROR("Cannot execution move to the end position.");
-				crc_.setServoPowerOff();
-				return false;
-			} else {
-				ROS_INFO_STREAM("Stop position OK.");
-			}
-		}
-
 	}
-
 	return true;
+}
+
+double ScrollGarment::getLenght(const std::vector<geometry_msgs::Point>& wp, int i, bool fromCur2End){
+	if (wp.size() > 1) {
+		double diffx;
+		double diffy;
+		if(fromCur2End){
+			diffx = wp[i].x - wp.back().x;
+			diffy = wp[i].y - wp.back().y;
+		}else {
+			diffx = wp[i].x - wp[i+1].x;
+			diffy = wp[i].y - wp[i+1].y;
+		}
+		return sqrt( diffx*diffx + diffy*diffy ); 
+	}
+	return 0;
+}
+
+double ScrollGarment::getLenght(const std::vector<geometry_msgs::Point>& wp){
+	if (wp.size() > 1) {
+		double diffx;
+		double diffy;
+		diffx = wp.front().x - wp.back().x;
+		diffy = wp.front().y - wp.back().y;
+		return sqrt( diffx*diffx + diffy*diffy ); 
+	}
+	return 0;
 }
 
 double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state, const double percent_of_path, bool& isBiggest){
@@ -1063,6 +1155,16 @@ double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories,
 		crc_.setPoseReferenceFrame("base_link");
 
 		robot_state::RobotState rs(*crc_.getCurrentState());
+
+		// { // SET FIRSTLY TO START POSITION - DOESNT WORK
+		// 	std::vector<std::string> j_names;
+		// 	j_names = get_joint_names();
+		// 	for (int i=0; i<j_names.size()-1; i++){
+		// 		rs.setVariablePosition(j_names[i], 0);
+		// 	}
+		// 	crc_.setStartState(rs);
+		// }
+
 		Eigen::Affine3d e, e_table, e_target, e_tmp;
 
 		e_table = rs.getFrameTransform(table_frame_);
@@ -1071,20 +1173,22 @@ double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories,
 		pose_tmp = wp1_copy.front();
 		tf::poseMsgToEigen(pose_tmp, e);
 		e_tmp = e_target.inverse() * e_table * e;
-		tf::poseEigenToMsg(e, pose_tmp);
+		tf::poseEigenToMsg(e_tmp, pose_tmp);
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
 			// ROS_ERROR("Error - setFromIK 1 ");
+			crc_.setPoseReferenceFrame(table_frame_);
 			return -1;
 		}
 
 		pose_tmp = wp2_copy.front();
 		tf::poseMsgToEigen(pose_tmp, e);
 		e_tmp = e_target.inverse() * e_table * e;
-		tf::poseEigenToMsg(e, pose_tmp);
+		tf::poseEigenToMsg(e_tmp, pose_tmp);
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_2), pose_tmp, tip_2)){
 			// ROS_ERROR("Error - setFromIK 2 ");
+			crc_.setPoseReferenceFrame(table_frame_);
 			return -1;
 		}
 
@@ -1095,8 +1199,9 @@ double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories,
 	}
 
 	crc_.setStartState(rs);
+	crc_.setPoseReferenceFrame(table_frame_);
+	// crc_.setStartStateToCurrentState();
 
-	
 	d = crc_.computeCartesianPathDual(wp1_copy, tip_1, wp2_copy, tip_2, step, JUMP_TRESHOLD, trajectories, false);
 	if(d > percent_of_path){
 		if(!crc_.check_trajectory(trajectories, elinks1, elinks2)) {
@@ -1106,7 +1211,7 @@ double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories,
 			isBiggest = true;
 			return d;
 		}
-	}
+	}	
 	return -1.0;	
 }
 
@@ -1121,6 +1226,7 @@ bool ScrollGarment::testWaypointsPosition(const std::vector<geometry_msgs::Point
 
 	heightVec.push_back(TEST_TRAJECTORY_HEIGHT_MAX + ADD_HEIGHT_TEST);
 	heightVec.push_back(TEST_TRAJECTORY_HEIGHT_MIN + ADD_HEIGHT_TEST);
+	heightVec.push_back(PROBABLY_HEIGHT + ADD_HEIGHT_TEST);
 	heightVec.push_back(START_STOP_HEIGHT + ADD_HEIGHT_TEST);
 
 	bool thisWaypoint = false;
@@ -1143,11 +1249,11 @@ bool ScrollGarment::testWaypointsPosition(const std::vector<geometry_msgs::Point
 
 			tf::poseMsgToEigen(wp1, e);
 			e_tmp = e_target.inverse() * e_table * e;
-			tf::poseEigenToMsg(e, wp1);
+			tf::poseEigenToMsg(e_tmp, wp1);
 
 			tf::poseMsgToEigen(wp2, e);
 			e_tmp = e_target.inverse() * e_table * e;
-			tf::poseEigenToMsg(e, wp2);
+			tf::poseEigenToMsg(e_tmp, wp2);
 
 
 			for (int i=0; i< ANGLE_NUMBER_STEP; i++) 
@@ -1196,7 +1302,7 @@ void ScrollGarment::getLowerPositions(std::vector<geometry_msgs::Pose>& wp1,std:
 
 	std::vector<double> height;
 	height.push_back(TEST_TRAJECTORY_HEIGHT_MIN + ADD_HEIGHT_TEST);
-	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height);
+	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height, true);
 }
 
 void ScrollGarment::getUpperPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, ScrollGarmentSinglePathConfig& singlePathConfig){
@@ -1204,7 +1310,7 @@ void ScrollGarment::getUpperPositions(std::vector<geometry_msgs::Pose>& wp1,std:
 
 	std::vector<double> height;
 	height.push_back(TEST_TRAJECTORY_HEIGHT_MAX + ADD_HEIGHT_TEST);
-	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height);
+	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height, true);
 }
 
 void ScrollGarment::getCombinePositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, ScrollGarmentSinglePathConfig& singlePathConfig){
@@ -1213,10 +1319,18 @@ void ScrollGarment::getCombinePositions(std::vector<geometry_msgs::Pose>& wp1,st
 	std::vector<double> height;
 	height.push_back(TEST_TRAJECTORY_HEIGHT_MAX + ADD_HEIGHT_TEST);
 	height.push_back(TEST_TRAJECTORY_HEIGHT_MIN + ADD_HEIGHT_TEST);
-	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height);
+	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height, true);
 }
 
-void ScrollGarment::getPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, const std::vector< geometry_msgs::Point >& waypoints_1, const	std::vector< geometry_msgs::Point >& waypoints_2, double yawR1, double yawR2, const std::vector<double> height) {
+void ScrollGarment::getClearCentralPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, ScrollGarmentSinglePathConfig& singlePathConfig){
+	//-------------------------------------------------------------------------------------------
+
+	std::vector<double> height;
+	height.push_back((TEST_TRAJECTORY_HEIGHT_MAX + TEST_TRAJECTORY_HEIGHT_MIN)/2 + ADD_HEIGHT_TEST);
+	getPositions(wp1, wp2, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, height, false);
+}
+
+void ScrollGarment::getPositions(std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, const std::vector< geometry_msgs::Point >& waypoints_1, const	std::vector< geometry_msgs::Point >& waypoints_2, double yawR1, double yawR2, const std::vector<double> height, bool startStop) {
 	//-------------------------------------------------------------------------------------------
 
 	geometry_msgs::Pose blank;
@@ -1229,10 +1343,13 @@ void ScrollGarment::getPositions(std::vector<geometry_msgs::Pose>& wp1,std::vect
 		ROS_ERROR("Waypoints have different number of points.");
 	}
 
-	blank.position = waypoints_1.front();
-	blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 	blank.orientation = transformQuaternion(table_frame_ ,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
-	wp1.push_back(blank);
+
+	if (startStop){
+		blank.position = waypoints_1.front();
+		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;		
+		wp1.push_back(blank);
+	}
 
 	for(int h = 0; h < height.size(); h++) {
 		for (i = 0; i < waypoints_1.size(); i++){
@@ -1241,17 +1358,21 @@ void ScrollGarment::getPositions(std::vector<geometry_msgs::Pose>& wp1,std::vect
 			wp1.push_back(blank);
 		}
 
-		blank.position = waypoints_1.back();
-		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
-		wp1.push_back(blank);
+		if (startStop){
+			blank.position = waypoints_1.back();
+			blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
+			wp1.push_back(blank);
+		}
 
 	}
 
-
-	blank.position = waypoints_2.front();
-	blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 	blank.orientation = transformQuaternion(table_frame_ ,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
-	wp2.push_back(blank);
+
+	if (startStop){
+		blank.position = waypoints_2.front();
+		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;		
+		wp2.push_back(blank);
+	}
 
 	for(int h = 0; h < height.size(); h++) {		
 		for (i = 0; i < waypoints_2.size(); i++){
@@ -1260,107 +1381,28 @@ void ScrollGarment::getPositions(std::vector<geometry_msgs::Pose>& wp1,std::vect
 			wp2.push_back(blank);
 		}
 
-		blank.position = waypoints_2.back();
-		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
-		wp2.push_back(blank);		
+		if (startStop){
+			blank.position = waypoints_2.back();
+			blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
+			wp2.push_back(blank);	
+		}	
 	}	
 }
 
-// bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state, double& percent_of_path, bool& isBiggest){
-// 	//------------------------------------------------------------------------
-
-// 	char buffer [100];
-
-// 	showMarkers(table_frame_, wp1, wp2);
-
-// 	std::string tip_1 = "r1_ee", tip_2 = "r2_ee", conf = "Configuration 1: ", group_1 = "r1_arm", group_2 = "r2_arm";
-// 	if(!first_combination) {
-// 		tip_1 = "r2_ee", tip_2 = "r1_ee", conf = "Configuration 2: ", group_1 = "r2_arm", group_2 = "r1_arm";
-// 	}
-
-// 	double d;
-// 	int max=16;
-
-// 	robot_state::RobotState rs(*crc_.getCurrentState());
-
-// 	std::vector<geometry_msgs::Pose> wp1_copy=wp1, wp2_copy=wp2;
-
-// 	if (!current_state){
-// 		geometry_msgs::Pose pose_tmp;
-// 		crc_.setPoseReferenceFrame("base_link");
-
-// 		robot_state::RobotState rs(*crc_.getCurrentState());
-// 		Eigen::Affine3d e, e_table, e_target, e_tmp;
-
-// 		e_table = rs.getFrameTransform(table_frame_);
-// 		e_target = rs.getFrameTransform("base_link");
-
-// 		pose_tmp = wp1_copy.front();
-// 		tf::poseMsgToEigen(pose_tmp, e);
-// 		e_tmp = e_target.inverse() * e_table * e;
-// 		tf::poseEigenToMsg(e, pose_tmp);
-
-// 		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
-// 			ROS_ERROR("Error - setFromIK 1 ");
-// 			return false;
-// 		}
-
-// 		pose_tmp = wp2_copy.front();
-// 		tf::poseMsgToEigen(pose_tmp, e);
-// 		e_tmp = e_target.inverse() * e_table * e;
-// 		tf::poseEigenToMsg(e, pose_tmp);
-
-// 		if(!rs.setFromIK (rs.getJointModelGroup(group_2), pose_tmp, tip_2)){
-// 			ROS_ERROR("Error - setFromIK 2 ");
-// 			return false;
-// 		}
-
-// 		crc_.setPoseReferenceFrame(table_frame_);
-
-// 		wp1_copy.erase(wp1_copy.begin());
-// 		wp2_copy.erase(wp2_copy.begin());
-// 	}
-// 	crc_.setStartState(rs);
-
-// 	d = crc_.computeCartesianPathDual(wp1_copy, tip_1, wp2_copy, tip_2, step, JUMP_TRESHOLD, trajectories, false);
-
-// 	if(!(fabs(d - 1.0) < 0.001)) {
-// 		sprintf(buffer, "cannot interpolate up. d = %.4f (%.4f).", d, fabs(d - 1.0));
-// 		ROS_WARN_STREAM(buffer);
-// 		if (percent_of_path < d){
-// 			if(!crc_.check_trajectory(trajectories, elinks1, elinks2)) {
-// 				sprintf(buffer, "cannot interpolate up because of collision");
-// 				ROS_WARN_STREAM(buffer);
-// 				isBiggest = false;
-// 				return false;
-// 			} else {
-// 				percent_of_path = d;
-// 				isBiggest = true;
-// 				return false;
-// 			}
-// 		}
-// 		return false;
-// 	} else{
-// 		if(!crc_.check_trajectory(trajectories, elinks1, elinks2)) {
-// 			sprintf(buffer, "cannot interpolate up because of collision");
-// 			ROS_WARN_STREAM(buffer);
-// 			return false;
-// 		}
-// 		else{
-// 			return true;
-// 		}
-// 	}
-// 	return false;
-// }
 
 bool ScrollGarment::startStopPosition(ScrollGarmentSinglePathConfig& singlePathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, bool start) {
 	//------------------------------------------------------------------------
-
 	return startStopPosition(table_frame_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, elinks1, elinks2, singlePathConfig.configuration_, start);
 }
 
-int ScrollGarment::pressOnTheTable(ScrollGarmentSinglePathConfig& singlePathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, double force) {	//----------------------------------------------------------------------------
+int ScrollGarment::pressOnTheTable(ScrollGarmentSinglePathConfig& singlePathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, double force) {	
+	//----------------------------------------------------------------------------
 	return pressOnTheTable(table_frame_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, elinks1, elinks2, singlePathConfig.configuration_, force);
+}
+
+bool ScrollGarment::scrollOverTable(ScrollGarmentSinglePathConfig& singlePathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2, double force) {
+	//----------------------------------------------------------------------------
+	return scrollOverTable(table_frame_, singlePathConfig.yawR1_, singlePathConfig.yawR2_, singlePathConfig.short_waypoints_1_, singlePathConfig.short_waypoints_2_, elinks1, elinks2, singlePathConfig.configuration_, force);
 }
 
 bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& currentPathConfig, const std::vector<std::string>& elinks1, const std::vector<std::string>& elinks2){
@@ -1394,76 +1436,191 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 	// ext_axis_yaw = ext_axis_yaw_;
 	// mutex_ext_axis_yaw_.unlock();
 
+	bool current_state = false;
 
-
-	
 	for (int i=0; i< angle_number_step; i++) {
 		currentPathConfig.yawR1_ = mod2pi(2*M_PI + current_yawR1 + i*(2*M_PI/angle_number_step));
 
 		for (int j=0; j< angle_number_step; j++) {
 			currentPathConfig.yawR2_ = mod2pi(2*M_PI + current_yawR2 + j*(2*M_PI/angle_number_step));
 			bool isBiggest = false;
-			
-			std::vector<geometry_msgs::Pose> wp1, wp2;
+
 			moveit_msgs::RobotTrajectory trajectories;
 
 			currentPathConfig.configuration_ = true;
-			getLowerPositions(wp1, wp2, currentPathConfig);
-			testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-			if(isBiggest){
-				getUpperPositions(wp1, wp2, currentPathConfig);
-				testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-				if(isBiggest){
-					getLowerPositions(wp1, wp2, currentPathConfig);
-					currentPathConfig.lowerTrajPercentage_ = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-					if(isBiggest){
-						getUpperPositions(wp1, wp2, currentPathConfig);
-						currentPathConfig.upperTrajPercentage_ = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-						if(isBiggest){
-							biggestSinglePathConfig = currentPathConfig; //MAY WILL BE AN ERROR
+
+			// std::cout << currentPathConfig.yawR1_ << "\t" << currentPathConfig.yawR2_ << std::endl;
+
+			do{
+				getLowerPositions(wp1, wp2, currentPathConfig);
+				double d = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
+				if(isBiggest) {				
+					getUpperPositions(wp1, wp2, currentPathConfig);
+					testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
+					if(isBiggest) {
+						getLowerPositions(wp1, wp2, currentPathConfig);
+						currentPathConfig.lowerTrajPercentage_ = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
+						if(isBiggest) {
+							getUpperPositions(wp1, wp2, currentPathConfig);
+							currentPathConfig.upperTrajPercentage_ = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
+							if(isBiggest) {
+								
+								biggestSinglePathConfig = currentPathConfig;								
+								
+								std::cout << "Best:" << biggestSinglePathConfig.getPercentage() << std::endl;
+								// std::cout << biggestSinglePathConfig.yawR1_ << "\t" << biggestSinglePathConfig.yawR2_ << "\t" << biggestSinglePathConfig.configuration_ << "\t" << wp1.size() << "\t" << wp2.size() <<std::endl;	
+							}
 						}
 					}
+				}		
+
+				if(std::abs( biggestSinglePathConfig.getPercentage()-1) < 0.001 ){
+					return true;
 				}
-			}
 
-			currentPathConfig.configuration_ = false;
-			getLowerPositions(wp1, wp2, currentPathConfig);
-			testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-			if(isBiggest){
-				getUpperPositions(wp1, wp2, currentPathConfig);
-				testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-				if(isBiggest){
-					getLowerPositions(wp1, wp2, currentPathConfig);
-					currentPathConfig.lowerTrajPercentage_ = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-					if(isBiggest){
-						getUpperPositions(wp1, wp2, currentPathConfig);
-						currentPathConfig.upperTrajPercentage_ = testPathConfig(trajectories, elinks1, elinks2, wp1, wp2, currentPathConfig.configuration_, TEST_STEP, current_state, biggestSinglePathConfig.getPercentage(), isBiggest);
-						if(isBiggest){
-							biggestSinglePathConfig = currentPathConfig; //MAY WILL BE AN ERROR
-						}
-					}
+				if(currentPathConfig.configuration_){
+					currentPathConfig.configuration_ = false;
+				} else {
+					currentPathConfig.configuration_ = true;
 				}
-			}
-
-			// if(!planPoses(trajectories, elinks1, elinks2, wp1, wp2, true, TEST_STEP, false))
-			// {
-			// 	if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, false, TEST_STEP, false))
-			// 	{
-			// 		if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, false, STEP, false))
-			// 		{
-			// 			conf = false;	
-			// 			ROS_INFO_STREAM(i*ANGLE_NUMBER_STEP+j+1);				
-			// 			return true;
-			// 		}
-			// 	}
-			// } else if(planPoses(trajectories, elinks1, elinks2, wp1, wp2, true, STEP, false))
-			// {
-			// 	conf = true;
-			// 	ROS_INFO_STREAM(i*ANGLE_NUMBER_STEP+j+1);
-			// 	return true;
-			// }
-
+			} while(!currentPathConfig.configuration_);
 		}
 	}
+
+
+	// 	IF NOT RETURN WITH TRUE => TRAJECTORY IS NOT COMPLETE
+	// 		FIND SHORTER TRAJECTORY (FORM UPPER/LOWER) 
+	// 		AND FROM LAST (DEPEND ON CONSTATNT "MAX_TRAJ_2_MAKE_WAYPOINT") 
+	// 		POINT OF TRAJECTORY MAKE ANOTHER WAYPOINT 
+	{
+
+		if (biggestSinglePathConfig.getLPer() > biggestSinglePathConfig.getUPer()) {
+		// TRAJ FROM UPPER
+			getUpperPositions(wp1, wp2, biggestSinglePathConfig);
+		} else {
+		// TRAJ FORM LOWER
+			getLowerPositions(wp1, wp2, biggestSinglePathConfig);
+		}
+
+		bool isBiggest = false;
+		moveit_msgs::RobotTrajectory finalTraj;
+		testPathConfig(finalTraj, elinks1, elinks2, wp1, wp2, biggestSinglePathConfig.configuration_, STEP, current_state, 0.0, isBiggest);
+
+		sensor_msgs::JointState endPoint;
+		endPoint.header = finalTraj.joint_trajectory.header;
+
+		int sizeOfTraj = finalTraj.joint_trajectory.points.size();
+		int posOfEnd = std::floor(sizeOfTraj * (MAX_TRAJ_2_MAKE_ENDPOINT - sub_traj_));
+
+		endPoint.name = finalTraj.joint_trajectory.joint_names;
+		endPoint.position = finalTraj.joint_trajectory.points[posOfEnd].positions;
+		endPoint.velocity = finalTraj.joint_trajectory.points[posOfEnd].velocities;
+		endPoint.effort = finalTraj.joint_trajectory.points[posOfEnd].effort;
+
+						// MAY ERROR - NOT SURE IF RS COPY EXT.AXIS FROM CURRENT
+		robot_state::RobotState rs(*crc_.getCurrentState());	
+		rs.setVariableValues(endPoint);
+
+		Eigen::Affine3d e_target, e_tmp, e_r1_ee, e_r2_ee, e_table, e_base;
+
+		e_table = rs.getFrameTransform(table_frame_);
+		e_r1_ee = rs.getFrameTransform("r1_ee");
+		e_r2_ee = rs.getFrameTransform("r2_ee");
+
+		geometry_msgs::Point p1, p2;
+		e_tmp = e_table.inverse() * e_r1_ee;
+		// std::cout << "\033[1;36m" << e_tmp.matrix() << "\033[0m"<< std::endl;
+		p1.x=e_tmp(0,3);
+		p1.y=e_tmp(1,3);
+		e_tmp = e_table.inverse() * e_r2_ee;
+		// std::cout << "\033[1;36m" << e_tmp.matrix() << "\033[0m"<< std::endl;
+		p2.x=e_tmp(0,3);
+		p2.y=e_tmp(1,3);
+
+
+		biggestSinglePathConfig.short_waypoints_1_.erase(biggestSinglePathConfig.short_waypoints_1_.end());
+		biggestSinglePathConfig.short_waypoints_2_.erase(biggestSinglePathConfig.short_waypoints_2_.end());
+		if(biggestSinglePathConfig.configuration_){
+			// CHANGE COMPUTED POINT WITH END POINT IN WAYPOINTS
+			biggestSinglePathConfig.short_waypoints_1_.push_back(p1);
+			biggestSinglePathConfig.short_waypoints_2_.push_back(p2);
+		} else {
+			// CHANGE COMPUTED POINT WITH END POINT IN WAYPOINTS (second configuration)
+			biggestSinglePathConfig.short_waypoints_1_.push_back(p2);
+			biggestSinglePathConfig.short_waypoints_2_.push_back(p1);
+		}
+
+	}
+
+	currentPathConfig = biggestSinglePathConfig;
 	return false;
 }
+
+
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+// GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 
+
+
+// bool ScrollGarment::goToStartStopPosition(const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination){
+// 	//------------------------------------------------------------------------
+
+// 	std::string tip_1 = "r1_ee", tip_2 = "r2_ee", conf = "Configuration 1: ", group_1 = "r1_arm", group_2 = "r2_arm";
+// 	if(!first_combination) {
+// 		tip_1 = "r2_ee", tip_2 = "r1_ee", conf = "Configuration 2: ", group_1 = "r2_arm", group_2 = "r1_arm";
+// 	}
+
+// 	std::cout << wp1[0] << std::endl;
+// 	std::cout << wp2[0] << std::endl;
+
+// 	geometry_msgs::Pose pose_tmp;
+
+// 	robot_state::RobotState rs(*crc_.getCurrentState());
+
+// 	std::vector<geometry_msgs::Pose> wp1_copy=wp1, wp2_copy=wp2;
+// 	Eigen::Affine3d e, e_table, e_target, e_tmp;
+
+// 	e_table = rs.getFrameTransform(table_frame_);
+// 	e_target = rs.getFrameTransform(BASE_TARGET);
+
+// 	pose_tmp = wp1_copy.front();
+// 	tf::poseMsgToEigen(pose_tmp, e);
+// 	e_tmp = e_target.inverse() * e_table * e;
+// 	tf::poseEigenToMsg(e_tmp, pose_tmp);
+
+// 	if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
+// 		ROS_ERROR("Error - setFromIK 1 ");
+// 		return false;
+// 	}
+
+// 	std::cout << pose_tmp << std::endl;
+
+// 	pose_tmp = wp2_copy.front();
+// 	tf::poseMsgToEigen(pose_tmp, e);
+// 	e_tmp = e_target.inverse() * e_table * e;
+// 	tf::poseEigenToMsg(e_tmp, pose_tmp);
+
+// 	if(!rs.setFromIK (rs.getJointModelGroup(group_2), pose_tmp, tip_2)){
+// 		ROS_ERROR("Error - setFromIK 2 ");
+// 		return false;
+// 	}
+
+// 	std::cout << pose_tmp << std::endl;
+
+// 	crc_.setJointValueTarget(rs);
+// 	return crc_.move();
+
+// }
