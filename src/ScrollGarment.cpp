@@ -283,14 +283,10 @@ int ScrollGarment::pressOnTheTable(std::string table_frame , const double& yawR1
 		blank.position = waypoints_1[0];		
 		if(WrenchR1_.isForceOk(force)){
 			isOk = true;
-			/*mutex_z_r1_.lock();
-			std::cout << "R1 - OK, old z = " << z_r1_ << " force: " << WrenchR1_.getForce() << std::endl << std::endl;
-			mutex_z_r1_.unlock();*/
 		}else{
 			isOk = false;
 			mutex_z_r1_.lock();
 			blank.position.z = z_r1_ + (WrenchR1_.getForce() - force) * FORCE_CONST;
-			/*std::cout << "R1 - NOT OK, old z = " << z_r1_ << " new z = " << blank.position.z << " force: " << WrenchR1_.getForce() << std::endl << std::endl;*/
 			mutex_z_r1_.unlock();				
 		}		
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
@@ -301,10 +297,9 @@ int ScrollGarment::pressOnTheTable(std::string table_frame , const double& yawR1
 			isOk = false;
 			mutex_z_r2_.lock();
 			blank.position.z = z_r2_ + (WrenchR2_.getForce() - force) * FORCE_CONST;
-			/*std::cout << "R2 - NOT OK, old z = " << z_r2_ << " new z = " << blank.position.z << " force: " << WrenchR2_.getForce() << std::endl << std::endl;*/
 			mutex_z_r2_.unlock();
 		}		
-		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
+		blank.orientation = transformQuaternion(table_frame, ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
 		wp2.push_back(blank);
 	}
 	
@@ -453,19 +448,14 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 	double d;
 	int max=16;
 
-	robot_state::RobotState rs(*crc_.getCurrentState());
-
 	std::vector<geometry_msgs::Pose> wp1_copy=wp1, wp2_copy=wp2;
-	// for (int i=0; i<max; i++){
-	// 	std::cout << rs.getVariablePositions()[i] << "  ";
-	// }
-	// std::cout << std::endl;
+	crc_.setStartStateToCurrentState();
+	robot_state::RobotState rs(*crc_.getCurrentState());
 
 	if (!current_state){
 		geometry_msgs::Pose pose_tmp;
 		crc_.setPoseReferenceFrame("base_link");
-
-		robot_state::RobotState rs(*crc_.getCurrentState());
+		
 		Eigen::Affine3d e, e_table, e_target, e_tmp;
 
 		e_table = rs.getFrameTransform(table_frame_);
@@ -478,8 +468,8 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 
 		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
 			ROS_ERROR("Error - setFromIK 1 ");
-			// crc_.setPoseReferenceFrame(table_frame_);
-			// return false;
+			crc_.setPoseReferenceFrame(table_frame_);
+			return false;
 		}
 
 		pose_tmp = wp2_copy.front();
@@ -493,22 +483,11 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 			return false;
 		}
 
-		pose_tmp = wp1_copy.front();
-		tf::poseMsgToEigen(pose_tmp, e);
-		e_tmp = e_target.inverse() * e_table * e;
-		tf::poseEigenToMsg(e_tmp, pose_tmp);
-
-		if(!rs.setFromIK (rs.getJointModelGroup(group_1), pose_tmp, tip_1)){
-			ROS_ERROR("Error - setFromIK 1 ");
-			crc_.setPoseReferenceFrame(table_frame_);
-			return false;
-		}
-
 		crc_.setPoseReferenceFrame(table_frame_);
 
 		wp1_copy.erase(wp1_copy.begin());
 		wp2_copy.erase(wp2_copy.begin());
-		// ROS_WARN_STREAM("WAS ERASED");
+		
 	}
 	crc_.setStartState(rs);
 
@@ -517,7 +496,6 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 	if(!(fabs(d - 1.0) < 0.001)) {
 		sprintf(buffer, "cannot interpolate up. d = %.4f (%.4f).", d, fabs(d - 1.0));
 		ROS_WARN_STREAM(buffer);
-		// std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << " wp1_copy: " << wp1_copy.size() << " wp2_copy: " << wp2_copy.size() << std::endl;
 		return false;
 	} else{
 		if(!crc_.check_trajectory(trajectories, elinks1, elinks2)) {
@@ -526,6 +504,7 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 			return false;
 		}
 		else{
+			// std::cout << "INTERPOLATE OK!" << std::endl;
 			return true;
 		}
 	}
@@ -734,8 +713,6 @@ bool ScrollGarment::moveOverTable(	std::string frame_id,	std::vector< geometry_m
 		WrenchR1_.setInitialize();
 		WrenchR2_.setInitialize();
 
-
-
 		while(true){
 			int statueOfPress = pressOnTheTable(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, force);
 			if( statueOfPress == 0){
@@ -759,8 +736,6 @@ bool ScrollGarment::moveOverTable(	std::string frame_id,	std::vector< geometry_m
 			ROS_INFO_STREAM("Scroll garment on a table OK.");
 		}
 
-		std::cout << "wp1: " << waypoints_1.size() << " wp2: " << waypoints_2.size() << std::endl;
-
 		if( !startStopPosition(table_frame, yawR1, yawR2, waypoints_1, waypoints_2, elinks1, elinks2, conf, false) ){
 			ROS_ERROR("Cannot execution move to the end position.");
 			crc_.setServoPowerOff();
@@ -768,6 +743,7 @@ bool ScrollGarment::moveOverTable(	std::string frame_id,	std::vector< geometry_m
 		} else {
 			ROS_INFO_STREAM("Stop position OK.");
 		}
+
 
 	}else{
 		ROS_ERROR("Trajectory wasn't found.");
@@ -1145,10 +1121,10 @@ double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories,
 	double d;
 	int max=16;
 
-	robot_state::RobotState rs(*crc_.getCurrentState());
-
 	std::vector<geometry_msgs::Pose> wp1_copy = wp1;
 	std::vector<geometry_msgs::Pose> wp2_copy = wp2;
+
+	crc_.setStartStateToCurrentState();
 
 	if (!current_state){
 		geometry_msgs::Pose pose_tmp;
@@ -1196,9 +1172,11 @@ double ScrollGarment::testPathConfig(moveit_msgs::RobotTrajectory &trajectories,
 
 		wp1_copy.erase(wp1_copy.begin());
 		wp2_copy.erase(wp2_copy.begin());
+
+		crc_.setStartState(rs);
 	}
 
-	crc_.setStartState(rs);
+	
 	crc_.setPoseReferenceFrame(table_frame_);
 	// crc_.setStartStateToCurrentState();
 

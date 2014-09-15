@@ -1302,9 +1302,9 @@ int main(int argc, char **argv) {
 	ext.move();
 	ros::Duration(0.1).sleep();
 
-	clopema_robot::ClopemaRobotCommander home("arms");
-	home.setNamedTarget("home_arms");
-	home.move();
+	// clopema_robot::ClopemaRobotCommander home("arms");
+	// home.setNamedTarget("home_arms");
+	// home.move();
 
 	std::string frame_id = "base_link";
 	std::string table_frame = "t3_desk";
