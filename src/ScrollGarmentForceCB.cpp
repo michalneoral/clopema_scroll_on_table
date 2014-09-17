@@ -64,12 +64,12 @@ void ScrollGarmentForceCB::computeRotateForce(){
 
 	double maxForce = 0;
 	for (int i=0; i<3; i++){
-		if (maxForce < std::abs(erForces[0])) maxForce = std::abs(erForces[0]);
+		if (maxForce < std::abs(erForces[i])) maxForce = std::abs(erForces[i]);
 	}
 
 	double maxTorque = 0;
 	for (int i=0; i<3; i++){
-		if (maxTorque < std::abs(erTorques[0])) maxTorque = std::abs(erTorques[0]);
+		if (maxTorque < std::abs(erTorques[i])) maxTorque = std::abs(erTorques[i]);
 	}
 
 	if (maxForce >= ABSOLUTE_MAX_FORCE_RAW || maxTorque >= ABSOLUTE_MAX_TORQUE_RAW){

@@ -26,7 +26,7 @@
 // #define TEST_TRAJECTORY_HEIGHT_MAX (0.090) // [m]
 // #define TEST_TRAJECTORY_HEIGHT_MIN (0.030) // [m]
 #define OVER_TABLE_HEIGHT (0.010)// + 0.78) // [m]
-#define START_STOP_HEIGHT (0.050)// + 0.78) // [m]
+#define START_STOP_HEIGHT (0.060)// + 0.78) // [m]
 #define PROBABLY_HEIGHT (-0.010)// [m]
 // #define OVER_TABLE_HEIGHT (0.08)// + 0.78) // [m]
 // #define START_STOP_HEIGHT (0.15)// + 0.78) // [m]
@@ -151,6 +151,8 @@ public:
 	double getLenght(const std::vector<geometry_msgs::Point>& wp, int i, bool fromCur2End);
 
 	double getLenght(const std::vector<geometry_msgs::Point>& wp);
+
+	void getNamesConfiguration(bool comb, std::string& tip_1, std::string& tip_2, std::string& group_1, std::string& group_2);
 
 public:
 	std::string table_frame_;

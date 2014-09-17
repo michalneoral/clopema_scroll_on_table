@@ -380,26 +380,24 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 	//------------------------------------------------------------------------
 	std::vector<geometry_msgs::Pose> wp1, wp2;
 	moveit_msgs::RobotTrajectory trajectory;
-	geometry_msgs::Pose blank;
+	geometry_msgs::Pose blank, p1, p2;
 	// Prepare poses
 
 	std::cout << yawR1 << " \t" << yawR2 << "\t\t" << conf << "\t" << waypoints_1.size() << "\t" << waypoints_2.size() << std::endl;
 
 	if(start){
+
 		blank.position = waypoints_1[0];
 		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R1, PITCH2DESK_R1, YAW2DESK_R1 + yawR1);
-		wp1.push_back(blank); 
-		// wp1.push_back(blank);
+		p1 = blank; 
 		blank.position.z = OVER_TABLE_HEIGHT + ADD_HEIGHT_TEST;
 		wp1.push_back(blank);
 
 		blank.position = waypoints_2[0];
 		blank.position.z = START_STOP_HEIGHT + ADD_HEIGHT_TEST;
 		blank.orientation = transformQuaternion(table_frame,ROLL2DESK_R2, PITCH2DESK_R2, YAW2DESK_R2 + yawR2);
-		
-		wp2.push_back(blank);
-		// wp2.push_back(blank);
+		p2 = blank;
 		blank.position.z = OVER_TABLE_HEIGHT + ADD_HEIGHT_TEST;
 		wp2.push_back(blank);
 	} else {
@@ -415,6 +413,24 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 	}
 
 	// std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << std::endl; 
+	if(start){
+		robot_state::RobotState rs(*crc_.getCurrentState());
+		// crc_.setStartStateToCurrentState();
+		std::string tip_1, tip_2, group_1, group_2;
+		getNamesConfiguration(conf, tip_1, tip_2, group_1, group_2);
+		if (!rs.setFromIK(rs.getJointModelGroup(group_1), p1, tip_1)) {
+			ROS_WARN_STREAM("Cannot set from IK - second arm");
+			return false;
+		}
+		if (!rs.setFromIK(rs.getJointModelGroup(group_2), p2, tip_2)) {
+			ROS_WARN_STREAM("Cannot set from IK - second arm");
+			return false;
+		}
+		crc_.setJointValueTarget(rs);
+		if(!crc_.move()){
+			return false;
+		}
+	}
 
 	if(planPoses(trajectory, elinks1, elinks2, wp1, wp2, conf, STEP_START_STOP, JUMP_TRESHOLD_NONE, true)){
 		trajectory.joint_trajectory.points.erase(trajectory.joint_trajectory.points.begin());
@@ -427,6 +443,14 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 	}
 }
 
+void ScrollGarment::getNamesConfiguration(bool comb, std::string& tip_1, std::string& tip_2, std::string& group_1, std::string& group_2){
+	//------------------------------------------------------------------------
+	if(comb) {
+		tip_1 = "r1_ee"; tip_2 = "r2_ee"; group_1 = "r1_arm"; group_2 = "r2_arm";
+	} else {
+		tip_1 = "r2_ee"; tip_2 = "r1_ee"; group_1 = "r2_arm"; group_2 = "r1_arm";
+	}
+}
 
 bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const std::vector<std::string> elinks1, const std::vector<std::string> elinks2, const std::vector<geometry_msgs::Pose>& wp1, const std::vector<geometry_msgs::Pose>& wp2, const bool first_combination, double step, bool current_state){
 	//------------------------------------------------------------------------
@@ -440,10 +464,8 @@ bool ScrollGarment::planPoses(moveit_msgs::RobotTrajectory &trajectories, const 
 
 	showMarkers(table_frame_, wp1, wp2);
 
-	std::string tip_1 = "r1_ee", tip_2 = "r2_ee", conf = "Configuration 1: ", group_1 = "r1_arm", group_2 = "r2_arm";
-	if(!first_combination) {
-		tip_1 = "r2_ee", tip_2 = "r1_ee", conf = "Configuration 2: ", group_1 = "r2_arm", group_2 = "r1_arm";
-	}
+	std::string tip_1, tip_2, group_1, group_2;
+	getNamesConfiguration(first_combination, tip_1, tip_2, group_1, group_2);
 
 	double d;
 	int max=16;
