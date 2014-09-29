@@ -774,7 +774,7 @@ void getListOfPoints6(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,
 }
 
 // EXECUTE WHOLE TRAJECTORY WITH ONE CONFIG
-void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+void getListOfPoints5(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
 	//-----------------------------------------------------------------------
 	geometry_msgs::Point blank;
 
@@ -1053,7 +1053,7 @@ void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,s
 }
 
 // EXECUTE PARTLY
-void getListOfPoints5(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
+void getListOfPoints(std::vector<std::vector< geometry_msgs::Point>>& wp_map_1,std::vector<std::vector< geometry_msgs::Point>>& wp_map_2){
 	//-----------------------------------------------------------------------
 	geometry_msgs::Point blank;
 
@@ -1320,6 +1320,7 @@ int main(int argc, char **argv) {
 	if(!isTest){
 		getListOfPoints(waypoints_1, waypoints_2);
 		for (int i=start; i < waypoints_1.size(); i++) {
+		// for (int i=start; i < start+1; i++) {
 			// {
 			// 	ros::Duration(SLEEP_AFTER_EXEC).sleep();
 			// 	clopema_robot::ClopemaRobotCommander arms("arms");

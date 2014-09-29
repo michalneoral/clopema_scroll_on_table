@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!-- 
+    Proximity experiment
+-->
+<launch>
+
+    <include file="$(find clopema_launch)/launch/start_robot.launch">
+        <arg name="new_grip" value="true" />
+    </include>    
+    <include file="$(find clopema_launch)/launch/force_sensors.launch" />
+    <include file="$(find clopema_gripper)/launch/start_rubbing.launch" />
+    
+
+    <node pkg="rosservice" type="rosservice" name="" args="call --wait /r1_gripper/CalibratePosition">
+    </node>
+
+    <node pkg="rosservice" type="rosservice" name="" args="call --wait /r2_gripper/CalibratePosition">        
+    </node>
+
+    <node pkg="rosservice" type="rosservice" name="" args="call --wait /calibrate_service">        
+    </node>
+
+    <node pkg="rosservice" type="rosservice" name="" args="call --wait /stiffness_service 15">        
+    </node>
+
+    <node pkg="cvut_sandbox" name="r1ee_pub4force" type="r1ee_publisher4force.py">
+    </node> 
+
+    <node pkg="cvut_sandbox" name="r2ee_pub4force" type="r2ee_publisher4force.py">
+    </node>
+
+    <node pkg="cvut_sandbox" name="r1_force_sensor_pub4force" type="r1force_sensor_publisher4force.py">
+    </node>
+
+    <node pkg="cvut_sandbox" name="r2_force_sensor_pub4force" type="r2force_sensor_publisher4force.py">
+    </node>
+
+    <!-- <node pkg="cvut_sandbox" name="experiment_proximity" type="experiment_proximity" output="screen">
+    </node> -->
+
+</launch>

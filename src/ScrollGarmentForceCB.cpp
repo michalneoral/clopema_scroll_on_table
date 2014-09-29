@@ -4,6 +4,7 @@ ScrollGarmentForceCB::ScrollGarmentForceCB(){
 	init_forces_ = Eigen::Vector3d(0,0,0);
 	init_torques_ = Eigen::Vector3d(0,0,0);
 	ready_ = false;
+	stop_on_ = true;
 }
 
 void ScrollGarmentForceCB::setInitialize(){
@@ -25,6 +26,15 @@ void ScrollGarmentForceCB::cb_force(const geometry_msgs::WrenchStamped& msg) {
 		setInitialize();
 	}
 	computeRotateForce();
+}
+
+void ScrollGarmentForceCB::emergencyStop(){
+	mutex_stop_on_.lock();
+	if(stop_on_){
+		clopema_robot::ClopemaRobotCommander crc("arms");
+		crc.stop();		
+	}
+	mutex_stop_on_.unlock();
 }
 
 void ScrollGarmentForceCB::startSub(std::string name){

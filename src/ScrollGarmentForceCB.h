@@ -9,6 +9,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf/transform_listener.h>
+#include <clopema_robot/robot_commander.h>
 
 #define ABSOLUTE_MAX_FORCE 50.0 // [N]
 #define ABSOLUTE_MAX_FORCE_RAW 60 // [N]
@@ -29,6 +30,7 @@ public:
 	void setLenght();
 	bool isForceOk(double force);
 	void showForces();
+	void emergencyStop();
 
 public:
 	std::string force_topic_name_;
@@ -56,6 +58,9 @@ public:
 	double lenght_;
 
 	bool ready_;
+
+	boost::mutex mutex_stop_on_;
+	bool stop_on_;
 };
 
 #endif

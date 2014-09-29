@@ -2,6 +2,7 @@
 
 ScrollGarment::ScrollGarment(): crc_("arms"){
 
+	sub_traj_ = 0;
 	sub_joints_ = node_.subscribe("/joint_states", 1, &ScrollGarment::cb_joint, this);
 	pub_marker_ = node_.advertise<geometry_msgs::PoseArray>("points_traj_scroll_garment", 0);
 	WrenchR1_.startSub("r1");
@@ -10,6 +11,14 @@ ScrollGarment::ScrollGarment(): crc_("arms"){
 	WrenchR1_.setInitialize();
 	WrenchR2_.setInitialize();	
 
+}
+
+void debug(int& h, std::string help_var ){
+		std::cout << "\033[1;37mDEBUG: " << h << " : " << help_var << "\033[0m"<< std::endl; h++;// ]]
+}
+
+void debug(int& h, int help_var ){
+		debug(h, std::to_string(help_var));
 }
 
 void ScrollGarment::getListOfCollisions(std::vector<std::string>& elinks1,std::vector<std::string>& elinks2, std::string table_frame){
@@ -26,8 +35,12 @@ void ScrollGarment::getListOfCollisions(std::vector<std::string>& elinks1,std::v
 	for(int i=0; i<elinks1.size(); i++){
 		elinks2.push_back(table_frame);
 	}
-	// elinks1.push_back("r1_ee");
-	// elinks2.push_back("r2_ee");
+	elinks1.push_back("r1_ee");
+	elinks2.push_back("r2_ee");
+	elinks1.push_back("r1_ee_par");
+	elinks2.push_back("r2_ee_par");
+	elinks1.push_back("r1_gripper");
+	elinks2.push_back("r2_gripper");
 }
 
 double randomOffset(){
@@ -415,15 +428,31 @@ bool ScrollGarment::startStopPosition(std::string table_frame , const double& ya
 	// std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << std::endl; 
 	if(start){
 		robot_state::RobotState rs(*crc_.getCurrentState());
-		// crc_.setStartStateToCurrentState();
+		
+		crc_.setPoseReferenceFrame("base_link");
+		Eigen::Affine3d e, e_table, e_target, e_tmp;
+
+		e_table = rs.getFrameTransform(table_frame_);
+		e_target = rs.getFrameTransform("base_link");
+
+		tf::poseMsgToEigen(p1, e);
+		e_tmp = e_target.inverse() * e_table * e;
+		tf::poseEigenToMsg(e_tmp, p1);
+
+		tf::poseMsgToEigen(p2, e);
+		e_tmp = e_target.inverse() * e_table * e;
+		tf::poseEigenToMsg(e_tmp, p2);
+
+		crc_.setPoseReferenceFrame(table_frame_);
+
 		std::string tip_1, tip_2, group_1, group_2;
 		getNamesConfiguration(conf, tip_1, tip_2, group_1, group_2);
 		if (!rs.setFromIK(rs.getJointModelGroup(group_1), p1, tip_1)) {
-			ROS_WARN_STREAM("Cannot set from IK - second arm");
+			ROS_WARN_STREAM("Cannot set from IK - first arm - planning");
 			return false;
 		}
 		if (!rs.setFromIK(rs.getJointModelGroup(group_2), p2, tip_2)) {
-			ROS_WARN_STREAM("Cannot set from IK - second arm");
+			ROS_WARN_STREAM("Cannot set from IK - second arm - planning");
 			return false;
 		}
 		crc_.setJointValueTarget(rs);
@@ -976,16 +1005,17 @@ bool ScrollGarment::moveOverTablePiecewise(	std::string frame_id,	std::vector< g
 	}
 	ROS_INFO_STREAM("...is OK.");
 
+	
 	for (int i = 0; i < waypoints_1.size()-1; i++){
-
+				
 		currentPathConfig.changeWaypoint1(waypoints_1[i], waypoints_1[i+1]);
 		currentPathConfig.changeWaypoint2(waypoints_2[i], waypoints_2[i+1]);
-
+		
 
 
 			// FIND PART OF (OR WHOLE) TRAJECTORY
 		if(!findBiggestTrajectory(currentPathConfig, elinks1, elinks2)){
-			
+				
 			// CONTROL MINIMALY LENGHT OF TRAJECTORY, NUMBER OF STEPS AND PERCENTAGE
 			// 	- TESTING OF [ZACYKLENÍ]
 
@@ -1554,6 +1584,11 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 
 	currentPathConfig = biggestSinglePathConfig;
 	return false;
+}
+
+void ScrollGarment::emerStopOn(bool on){
+	WrenchR1_.stop_on_ = on;
+	WrenchR2_.stop_on_ = on;
 }
 
 

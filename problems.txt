@@ -1,0 +1,20 @@
+
+
+Problémy
+
+===================================
+===================================
+
+1) Pokud nenajde celistvou trajektorii (z důvodů kolize) spadne při vzniku objektu částečné trajektorie (konfigurace trajektorie)
+
+
+2) naráží do sebe
+
+
+3) vyřešit asynchroní move
+
+
+4) při zjištění, že naráží do stolu -> zvednout okamžitě až zase dosáhne požadované síly -> respektive přerušit vykonávanou a zvednout -> souvisí s bodem 3
+
+
+5) místo síly používat magnetic sensor

@@ -232,3 +232,6 @@ target_link_libraries(scroll_garment ${catkin_LIBRARIES})
 
 add_executable(experiment_proximity src/experiment_proximity.cpp src/ScrollGarment.cpp src/ScrollGarmentForceCB.cpp src/TrajectoryPublisherScroll.cpp src/ScrollGarmentSinglePathConfig.cpp)
 target_link_libraries(experiment_proximity ${catkin_LIBRARIES})
+
+add_executable(experiment_magnetic_encoder src/experiment_magnetic_encoder.cpp src/ScrollGarment.cpp src/ScrollGarmentForceCB.cpp src/TrajectoryPublisherScroll.cpp src/ScrollGarmentSinglePathConfig.cpp)
+target_link_libraries(experiment_magnetic_encoder ${catkin_LIBRARIES})
