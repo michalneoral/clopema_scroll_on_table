@@ -8,6 +8,7 @@ ScrollGarmentSinglePathConfig::ScrollGarmentSinglePathConfig(){
 	configuration_ = false;
 	yawR1_ = 0;
 	yawR2_ = 0;
+	found_ = true;
 }
 
 void ScrollGarmentSinglePathConfig::changeWaypoint1(geometry_msgs::Point p1, geometry_msgs::Point p2){

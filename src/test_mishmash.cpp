@@ -14,41 +14,55 @@
 #include "TrajectoryPublisherScroll.h"
 #include <tf_conversions/tf_eigen.h>
 #include "ScrollGarment.h"
+#include "ForceCallbackStarter.h"
 
-// void getListOfPoints(std::vector< geometry_msgs::Point>& waypoints_1,std::vector< geometry_msgs::Point>& waypoints_2){
-// 	geometry_msgs::Point blank;
+#define MAX_FORCE_EXP_PROXIMITY 30
+#define MIN_HEIGHT 0.775
+#define MAX_HEIGHT 1.2
+#define R1_X (-0.9)
+#define R2_X (-0.9)
+#define R1_Y 0.3
+#define R2_Y (-0.3)
+#define R1_yaw 4.1
+#define R2_yaw (2*M_PI - 4.1)
+#define PITCH (M_PI/2+M_PI/6)
 
-// 	for (int i=0; i < 10; i++){
-// 		blank.x = -0.9;
-// 		blank.y = 0.4;
-// 		waypoints_1.push_back(blank);
-// 		blank.y = 0.3;
-// 		waypoints_1.push_back(blank);
-// 		blank.x = -1.5;
-// 		blank.y = 0.4;
-// 		waypoints_1.push_back(blank);
-// 		blank.x = -0.9;
-// 		blank.y = 0.5;
-// 		waypoints_1.push_back(blank);
+bool goToPosition(clopema_robot::ClopemaRobotCommander& crc_){
+	robot_state::RobotState rs(*crc_.getCurrentState());
+	geometry_msgs::Pose blank, p1, p2;
 
-// 		blank.x = -0.9;
-// 		blank.y = -0.4;
-// 		waypoints_2.push_back(blank);
-// 		blank.y = -0.3;
-// 		waypoints_2.push_back(blank);
-// 		blank.x = -1.5;
-// 		blank.y = -0.4;
-// 		waypoints_2.push_back(blank);
-// 		blank.x = -0.9;
-// 		blank.y = -0.3;
-// 		waypoints_2.push_back(blank);
-// 	}
-// }
+	crc_.setPoseReferenceFrame("base_link");
 
-// double findPath(trajectory_msgs::JointTrajectory& trajectory){
+	blank.position.x = R1_X;
+	blank.position.y = R1_Y;
+	blank.position.z = MAX_HEIGHT;
+	blank.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, PITCH, R1_yaw);
+	p1 = blank;
 
-// }
+	blank.position.x = R2_X;
+	blank.position.y = R2_Y;
+	blank.position.z = MAX_HEIGHT;
+	blank.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, PITCH, R2_yaw);
+	p2 = blank;	
+	
+	if (!rs.setFromIK(rs.getJointModelGroup("r1_arm"), p1, "r1_ee")) {
+		ROS_WARN_STREAM("Cannot set from IK - first arm");
+		return false;
+	}
+	if (!rs.setFromIK(rs.getJointModelGroup("r2_arm"), p2, "r2_ee")) {
+		ROS_WARN_STREAM("Cannot set from IK - second arm");
+		return false;
+	}
+	crc_.setJointValueTarget(rs);
+	return crc_.move();
+}
 
+bool doExperiment(bool down, clopema_robot::ClopemaRobotCommander& crc){
+	
+	crc.setRobotSpeed(0.02);
+	goToPosition(crc);
+	return true;
+}
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "test_mishmash");
@@ -56,84 +70,22 @@ int main(int argc, char **argv) {
 	ros::AsyncSpinner spinner(1);
 	spinner.start();
 
-	// std::string frame_id = "base_link";
-	std::string table_frame = "t3_desk";
-	// std::vector< geometry_msgs::Point > waypoints_1, waypoints_2;
-	// getListOfPoints(waypoints_1, waypoints_2);
-
-	// ScrollGarment sg;
-	// sg.table_frame_ = table_frame;
-	// while(ros::ok()){
-	// 	sg.showForces();
-	// 	ros::Duration(0.1).sleep();
-	// }
-
-	// ROS_INFO_STREAM("Good Bye");
-
 	clopema_robot::ClopemaRobotCommander ext("ext");
 	ext.setNamedTarget("ext_minus_90");
 	ext.move();
+	ros::Duration(0.1).sleep();
 
-	clopema_robot::ClopemaRobotCommander home("arms");
-	home.setNamedTarget("home_arms");
-	home.move();
+	clopema_robot::ClopemaRobotCommander crc("arms");	
+	ros::Duration(0.1).sleep();
 
-	std::vector<std::string> joint_names;
-	joint_names.push_back("r1_joint_s");
-	joint_names.push_back("r1_joint_l");
-	joint_names.push_back("r1_joint_u");
-	joint_names.push_back("r1_joint_r");
-	joint_names.push_back("r1_joint_b");
-	joint_names.push_back("r1_joint_t");
-	joint_names.push_back("r2_joint_s");
-	joint_names.push_back("r2_joint_l");
-	joint_names.push_back("r2_joint_u");
-	joint_names.push_back("r2_joint_r");
-	joint_names.push_back("r2_joint_b");
-	joint_names.push_back("r2_joint_t");
-	joint_names.push_back("ext_axis");
+ 	ForceCallbackStarter sg;
 
-	clopema_robot::ClopemaRobotCommander crc("arms");
-	crc.setPoseReferenceFrame("base_link");    
-	geometry_msgs::Pose p;
-	robot_state::RobotState rs(*crc.getCurrentState());
-	for(int i=0; i<joint_names.size(); i++){
-		std::cout << joint_names[i] << ": "<< rs.getVariablePosition (joint_names[i]) << std::endl; 
+	if(!doExperiment(true, crc)){
+		return false;
 	}
-	crc.setStartState(rs);
-
-	// p.position.x = -0.9;
-	// p.position.y = 0.1;
-	// p.position.z = 0.84;
-	// p.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, M_PI/2+M_PI/6, M_PI);
-	
-	// if (!rs.setFromIK(rs.getJointModelGroup("r1_arm"), p1, "r1_ee")) {
-	// 	ROS_WARN_STREAM("Cannot set from IK - first arm");		
-	// 	return false;
-	// }
-
-	// d = crc_.computeCartesianPath(wp1_copy, tip_1, wp2_copy, tip_2, step, JUMP_TRESHOLD, trajectories, false);
-
-	// if(!(fabs(d - 1.0) < 0.001)) {
-	// 	sprintf(buffer, "cannot interpolate up. d = %.4f (%.4f).", d, fabs(d - 1.0));
-	// 	ROS_WARN_STREAM(buffer);
-	// 	// std::cout << "wp1: " << wp1.size() << " wp2: " << wp2.size() << " wp1_copy: " << wp1_copy.size() << " wp2_copy: " << wp2_copy.size() << std::endl;
-	// 	return false;
-	// } else{
-	// 	if(!crc_.check_trajectory(trajectories, elinks1, elinks2)) {
-	// 		sprintf(buffer, "cannot interpolate up because of collision");
-	// 		ROS_WARN_STREAM(buffer);
-	// 		return false;
-	// 	}
-	// 	else{
-	// 		return true;
-	// 	}
-	// }
-
-	// crc.setJointValueTarget(rs);
-	// return crc.move();
 
 
-	ros::spinOnce();
+	//ros::spinOnce();
+	spinner.stop();
 	return 0;
 }

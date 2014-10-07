@@ -63,6 +63,8 @@ public:
 	double yawR2_;
 	bool configuration_;
 
+	bool found_;
+
 	std::vector< geometry_msgs::Point > short_waypoints_1_;
 	std::vector< geometry_msgs::Point > short_waypoints_2_;
 

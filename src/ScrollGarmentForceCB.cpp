@@ -1,15 +1,15 @@
 #include "ScrollGarmentForceCB.h"
 
 ScrollGarmentForceCB::ScrollGarmentForceCB(){
-	init_forces_ = Eigen::Vector3d(0,0,0);
+	init_forces_  = Eigen::Vector3d(0,0,0);
 	init_torques_ = Eigen::Vector3d(0,0,0);
-	ready_ = false;
-	stop_on_ = true;
+	ready_        = false;
+	stop_on_      = true;
 }
 
 void ScrollGarmentForceCB::setInitialize(){
 	mutex_wrench_.lock();
-	init_forces_ = forces_;
+	init_forces_  = forces_;
 	init_torques_ = torques_;
 	mutex_wrench_.unlock();
 	computeRotateForce();
@@ -28,25 +28,26 @@ void ScrollGarmentForceCB::cb_force(const geometry_msgs::WrenchStamped& msg) {
 	computeRotateForce();
 }
 
-void ScrollGarmentForceCB::emergencyStop(){
-	mutex_stop_on_.lock();
-	if(stop_on_){
-		clopema_robot::ClopemaRobotCommander crc("arms");
-		crc.stop();		
-	}
-	mutex_stop_on_.unlock();
-}
+
+// void ScrollGarmentForceCB::emergencyStop(){
+// 	mutex_stop_on_.lock();
+// 	if(stop_on_){
+// 		clopema_robot::ClopemaRobotCommander crc("arms");
+// 		crc.stop();		
+// 	}
+// 	mutex_stop_on_.unlock();
+// }
 
 void ScrollGarmentForceCB::startSub(std::string name){
-	if (name.compare("r1")==0){
+	if (name.compare("r1") ==0){
 		force_topic_name_ = "/r1_force_data_filtered";
-		ee_name_ = "/r1_ee";
-		sensor_name_ = "/r1_force_sensor";		
+		ee_name_          = "/r1_ee";
+		sensor_name_      = "/r1_force_sensor";		
 	} 
-	else if(name.compare("r2")==0){
+	else if(name.compare("r2") ==0){
 		force_topic_name_ = "/r2_force_data_filtered";
-		ee_name_ = "/r2_ee";
-		sensor_name_ = "/r2_force_sensor";		
+		ee_name_          = "/r2_ee";
+		sensor_name_      = "/r2_force_sensor";		
 	} 
 	else
 	{

@@ -30,7 +30,7 @@ public:
 	void setLenght();
 	bool isForceOk(double force);
 	void showForces();
-	void emergencyStop();
+	// void emergencyStop();
 
 public:
 	std::string force_topic_name_;

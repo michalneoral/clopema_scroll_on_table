@@ -154,18 +154,18 @@ public:
 
 	void getNamesConfiguration(bool comb, std::string& tip_1, std::string& tip_2, std::string& group_1, std::string& group_2);
 
-	void emerStopOn(bool on);
+	// void emerStopOn(bool on);
 
 public:
 	std::string table_frame_;
 	clopema_robot::ClopemaRobotCommander crc_;
 
+	ScrollGarmentForceCB WrenchR1_;
+	ScrollGarmentForceCB WrenchR2_;	
+
 private:
 	
 	double sub_traj_;
-
-	ScrollGarmentForceCB WrenchR1_;
-	ScrollGarmentForceCB WrenchR2_;	
 
 	boost::mutex mutex_joints_;
 	sensor_msgs::JointState joints_;

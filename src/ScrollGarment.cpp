@@ -15,39 +15,39 @@ ScrollGarment::ScrollGarment(): crc_("arms"){
 
 void debug(int& h, std::string help_var ){
 		std::cout << "\033[1;37mDEBUG: " << h << " : " << help_var << "\033[0m"<< std::endl; h++;// ]]
-}
-
-void debug(int& h, int help_var ){
-		debug(h, std::to_string(help_var));
-}
-
-void ScrollGarment::getListOfCollisions(std::vector<std::string>& elinks1,std::vector<std::string>& elinks2, std::string table_frame){
-	//-------------------------------------------------------------------------------------------
-	elinks1.push_back("r1_gripper");
-	elinks1.push_back("r1_ee");
-	elinks1.push_back("r1_ee_par");
-	elinks1.push_back("r1_gg");
-	elinks1.push_back("r2_ps");
-	elinks1.push_back("r2_gripper");
-	elinks1.push_back("r2_ee");
-	elinks1.push_back("r2_ee_par");
-	elinks1.push_back("r2_gg");
-	for(int i=0; i<elinks1.size(); i++){
-		elinks2.push_back(table_frame);
 	}
-	elinks1.push_back("r1_ee");
-	elinks2.push_back("r2_ee");
-	elinks1.push_back("r1_ee_par");
-	elinks2.push_back("r2_ee_par");
-	elinks1.push_back("r1_gripper");
-	elinks2.push_back("r2_gripper");
-}
 
-double randomOffset(){
-	double min=-0.03;
-	double max=0.03;
-	return (max-min)*((double)std::rand()/RAND_MAX)+min;
-}
+	void debug(int& h, int help_var ){
+		debug(h, std::to_string(help_var));
+	}
+
+	void ScrollGarment::getListOfCollisions(std::vector<std::string>& elinks1,std::vector<std::string>& elinks2, std::string table_frame){
+	//-------------------------------------------------------------------------------------------
+		elinks1.push_back("r1_gripper");
+		elinks1.push_back("r1_ee");
+		elinks1.push_back("r1_ee_par");
+		elinks1.push_back("r1_gg");
+		elinks1.push_back("r2_ps");
+		elinks1.push_back("r2_gripper");
+		elinks1.push_back("r2_ee");
+		elinks1.push_back("r2_ee_par");
+		elinks1.push_back("r2_gg");
+		for(int i=0; i<elinks1.size(); i++){
+			elinks2.push_back(table_frame);
+		}
+	// elinks1.push_back("r1_ee");
+	// elinks2.push_back("r2_ee");
+	// elinks1.push_back("r1_ee_par");
+	// elinks2.push_back("r2_ee_par");
+	// elinks1.push_back("r1_gripper");
+	// elinks2.push_back("r2_gripper");
+	}
+
+	double randomOffset(){
+		double min=-0.03;
+		double max=0.03;
+		return (max-min)*((double)std::rand()/RAND_MAX)+min;
+	}
 
 void ScrollGarment::getTestPositions(std::string table_frame , std::vector<geometry_msgs::Pose>& wp1,std::vector<geometry_msgs::Pose>& wp2, const std::vector< geometry_msgs::Point >& waypoints_1, const	std::vector< geometry_msgs::Point >& waypoints_2, double yawR1, double yawR2, double offset) { //-------------------------------------------------------------------------------------------
 
@@ -1007,7 +1007,7 @@ bool ScrollGarment::moveOverTablePiecewise(	std::string frame_id,	std::vector< g
 
 	
 	for (int i = 0; i < waypoints_1.size()-1; i++){
-				
+
 		currentPathConfig.changeWaypoint1(waypoints_1[i], waypoints_1[i+1]);
 		currentPathConfig.changeWaypoint2(waypoints_2[i], waypoints_2[i+1]);
 		
@@ -1015,7 +1015,10 @@ bool ScrollGarment::moveOverTablePiecewise(	std::string frame_id,	std::vector< g
 
 			// FIND PART OF (OR WHOLE) TRAJECTORY
 		if(!findBiggestTrajectory(currentPathConfig, elinks1, elinks2)){
-				
+
+			if (!currentPathConfig.found_){
+				return false;
+			}
 			// CONTROL MINIMALY LENGHT OF TRAJECTORY, NUMBER OF STEPS AND PERCENTAGE
 			// 	- TESTING OF [ZACYKLENÍ]
 
@@ -1038,6 +1041,7 @@ bool ScrollGarment::moveOverTablePiecewise(	std::string frame_id,	std::vector< g
 			}
 
 			// IF TRAJECTORY IS NOT COMPLETE - FIND AND ADD LAST POINT OF TRAJECTORY TO WAYPOINTS
+			
 			previousPathConfig = currentPathConfig;
 			std::vector<geometry_msgs::Point>::iterator it;
 			it = waypoints_1.begin();
@@ -1467,6 +1471,7 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 	// mutex_ext_axis_yaw_.unlock();
 
 	bool current_state = false;
+	bool bestFound = false;
 
 	for (int i=0; i< angle_number_step; i++) {
 		currentPathConfig.yawR1_ = mod2pi(2*M_PI + current_yawR1 + i*(2*M_PI/angle_number_step));
@@ -1496,7 +1501,8 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 							if(isBiggest) {
 								
 								biggestSinglePathConfig = currentPathConfig;								
-								
+								bestFound = true;
+
 								std::cout << "Best:" << biggestSinglePathConfig.getPercentage() << std::endl;
 								// std::cout << biggestSinglePathConfig.yawR1_ << "\t" << biggestSinglePathConfig.yawR2_ << "\t" << biggestSinglePathConfig.configuration_ << "\t" << wp1.size() << "\t" << wp2.size() <<std::endl;	
 							}
@@ -1517,6 +1523,13 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 		}
 	}
 
+	int h=0;
+	debug(h, "Not complete");
+	
+	if (!bestFound){
+		currentPathConfig.found_=false;
+		return false;
+	}
 
 	// 	IF NOT RETURN WITH TRUE => TRAJECTORY IS NOT COMPLETE
 	// 		FIND SHORTER TRAJECTORY (FORM UPPER/LOWER) 
@@ -1531,6 +1544,8 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 		// TRAJ FORM LOWER
 			getLowerPositions(wp1, wp2, biggestSinglePathConfig);
 		}
+		debug(h, "After biggestSinglePath control");
+
 
 		bool isBiggest = false;
 		moveit_msgs::RobotTrajectory finalTraj;
@@ -1586,10 +1601,10 @@ bool ScrollGarment::findBiggestTrajectory(ScrollGarmentSinglePathConfig& current
 	return false;
 }
 
-void ScrollGarment::emerStopOn(bool on){
-	WrenchR1_.stop_on_ = on;
-	WrenchR2_.stop_on_ = on;
-}
+// void ScrollGarment::emerStopOn(bool on){
+// 	WrenchR1_.stop_on_ = on;
+// 	WrenchR2_.stop_on_ = on;
+// }
 
 
 // GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE 

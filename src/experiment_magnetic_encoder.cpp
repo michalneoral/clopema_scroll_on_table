@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 
 	ros::Duration(5).sleep();
 
-	sg.emerStopOn(false);
+	// sg.emerStopOn(false);
 
 	crc.setRobotSpeed(0.2);
 

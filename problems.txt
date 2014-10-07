@@ -11,10 +11,32 @@ Problémy
 2) naráží do sebe
 
 
-3) vyřešit asynchroní move
+3) vyřešit asynchronní move
 
 
 4) při zjištění, že naráží do stolu -> zvednout okamžitě až zase dosáhne požadované síly -> respektive přerušit vykonávanou a zvednout -> souvisí s bodem 3
 
 
 5) místo síly používat magnetic sensor
+
+
+
+======================================================================
+======================================================================
+======================================================================
+
+
+Úkoly
+
+===================================
+===================================
+
+
+1) Změřit závislosti magnetic sensor - force sensor
+	- Sestavit experiment - zastavovat na určité síle
+	- Proměřit různé nastavení stiffness
+	- Několikrát za sebou
+
+2) Změřit závislost proximity sensor - výška
+	- Sestavit experiment - zastavovat na určité síle
+	- Proměřit otevřený i zavřený
